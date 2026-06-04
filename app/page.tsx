@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-const StarCanvas = dynamic(() => import("@/components/StarCanvas"), { ssr: false });
+const StarCanvas = dynamic(() => import("@/components/StarCanvas"), {
+  ssr: false,
+});
 
 export default function Home() {
   const router = useRouter();
@@ -25,7 +27,8 @@ export default function Home() {
     <main
       style={{
         minHeight: "100vh",
-        background: "radial-gradient(ellipse at 50% 40%, #120820 0%, #070709 60%)",
+        background:
+          "radial-gradient(ellipse at 50% 40%, #120820 0%, #070709 60%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -37,17 +40,20 @@ export default function Home() {
     >
       <StarCanvas />
 
-      <div style={{
-        position: "absolute",
-        width: "600px",
-        height: "600px",
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(192,84,252,0.06) 0%, transparent 70%)",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -60%)",
-        pointerEvents: "none",
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          width: "600px",
+          height: "600px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(192,84,252,0.06) 0%, transparent 70%)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -60%)",
+          pointerEvents: "none",
+        }}
+      />
 
       <div
         style={{
@@ -60,17 +66,31 @@ export default function Home() {
           transition: "opacity 1.2s ease, transform 1.2s ease",
         }}
       >
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "12px",
-          marginBottom: "2.5rem",
-          opacity: 0.5,
-        }}>
-          <div style={{ height: "1px", width: "60px", background: "linear-gradient(to right, transparent, #ff6b9d)" }} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+            marginBottom: "2.5rem",
+            opacity: 0.5,
+          }}
+        >
+          <div
+            style={{
+              height: "1px",
+              width: "60px",
+              background: "linear-gradient(to right, transparent, #ff6b9d)",
+            }}
+          />
           <span style={{ fontSize: "18px" }}>✦</span>
-          <div style={{ height: "1px", width: "60px", background: "linear-gradient(to left, transparent, #ff6b9d)" }} />
+          <div
+            style={{
+              height: "1px",
+              width: "60px",
+              background: "linear-gradient(to left, transparent, #ff6b9d)",
+            }}
+          />
         </div>
 
         <h1
@@ -85,7 +105,7 @@ export default function Home() {
             textShadow: "0 0 40px rgba(192, 132, 252, 0.3)",
           }}
         >
-          Este espacio es solo nuestro…
+          Este espacio refleja un poco lo que eres para mi…
         </h1>
 
         <p
@@ -98,7 +118,8 @@ export default function Home() {
             letterSpacing: "0.06em",
           }}
         >
-          Elige cómo quieres sentirte hoy
+          Uno dice lo que pienso y siento por ti y el otro es para entretenerte
+          cuando estés estresada… espero sirva jijiji
         </p>
 
         <div
@@ -123,17 +144,32 @@ export default function Home() {
           />
         </div>
 
-        <div style={{
-          marginTop: "4rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "12px",
-          opacity: 0.3,
-        }}>
-          <div style={{ height: "1px", width: "40px", background: "#c084fc" }} />
-          <span style={{ fontSize: "10px", letterSpacing: "0.3em", color: "#c084fc", textTransform: "uppercase" }}>para ti</span>
-          <div style={{ height: "1px", width: "40px", background: "#c084fc" }} />
+        <div
+          style={{
+            marginTop: "4rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+            opacity: 0.3,
+          }}
+        >
+          <div
+            style={{ height: "1px", width: "40px", background: "#c084fc" }}
+          />
+          <span
+            style={{
+              fontSize: "10px",
+              letterSpacing: "0.3em",
+              color: "#c084fc",
+              textTransform: "uppercase",
+            }}
+          >
+            para ti
+          </span>
+          <div
+            style={{ height: "1px", width: "40px", background: "#c084fc" }}
+          />
         </div>
       </div>
     </main>
@@ -168,14 +204,23 @@ function NavButton({
           : hovered
             ? "rgba(192, 132, 252, 0.14)"
             : "rgba(192, 132, 252, 0.05)",
-        border: `1px solid ${primary
-          ? hovered ? "rgba(255,107,157,0.7)" : "rgba(255,107,157,0.3)"
-          : hovered ? "rgba(192,132,252,0.6)" : "rgba(192,132,252,0.2)"
+        border: `1px solid ${
+          primary
+            ? hovered
+              ? "rgba(255,107,157,0.7)"
+              : "rgba(255,107,157,0.3)"
+            : hovered
+              ? "rgba(192,132,252,0.6)"
+              : "rgba(192,132,252,0.2)"
         }`,
         borderRadius: "2px",
         color: primary
-          ? hovered ? "#ff9ec0" : "rgba(255, 180, 200, 0.85)"
-          : hovered ? "#d8b4fe" : "rgba(200, 170, 250, 0.75)",
+          ? hovered
+            ? "#ff9ec0"
+            : "rgba(255, 180, 200, 0.85)"
+          : hovered
+            ? "#d8b4fe"
+            : "rgba(200, 170, 250, 0.75)",
         fontFamily: "'Georgia', serif",
         fontSize: "0.95rem",
         letterSpacing: "0.1em",

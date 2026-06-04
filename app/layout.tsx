@@ -3,7 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Este espacio es solo nuestro…",
-  description: "Un universo creado solo para ti",
+  description:
+    "Un universo creado solo para ti, refleja lo que eres para mi...",
 };
 
 export default function RootLayout({
@@ -13,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body style={{ background: '#070709', minHeight: '100vh' }}>
+      <body style={{ background: "#070709", minHeight: "100vh" }}>
         {children}
       </body>
     </html>

@@ -17,7 +17,7 @@ const HeartGame = dynamic(() => import("@/components/HeartGame"), {
         letterSpacing: "0.2em",
       }}
     >
-      preparando el juego…
+      preparate para jugar 🌚
     </div>
   ),
 });
