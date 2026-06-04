@@ -66,14 +66,14 @@ const LEVEL_MESSAGES: Record<number, string> = {
 
 const HEART_COLORS: Record<HeartType, string> = {
   normal: "#ff7eb5",
-  gold: "#ffd700",
+  gold: "#ff6b6b",
   purple: "#c084fc",
   broken: "#666688",
 };
 
 const HEART_GLOW: Record<HeartType, string> = {
   normal: "#ff6b9d",
-  gold: "#ffaa00",
+  gold: "#ff4444",
   purple: "#a855f7",
   broken: "#444466",
 };
@@ -91,9 +91,22 @@ function drawHeartShape(
   glowColor: string,
   alpha: number,
   broken = false,
+  isSpecial = false,
 ) {
   ctx.save();
   ctx.globalAlpha = alpha;
+
+  if (isSpecial) {
+    ctx.font = `${size * 1.8}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "#ff4444";
+    ctx.shadowBlur = 18;
+    ctx.fillText("❤️‍🩹", cx, cy);
+    ctx.restore();
+    return;
+  }
+
   ctx.shadowColor = glowColor;
   ctx.shadowBlur = 14;
   ctx.fillStyle = color;
@@ -232,9 +245,9 @@ function InstructionsModal({
               broken: false,
             },
             {
-              color: "#ffd700",
-              glow: "#ffaa00",
-              label: "Corazón dorado ❤️‍🩹",
+              color: "#ff6b6b",
+              glow: "#ff4444",
+              label: "Corazón especial ❤️‍🩹",
               desc: "Vale 3 puntos — ¡no lo dejes ir!",
               broken: false,
             },
@@ -564,7 +577,7 @@ export default function HeartGame() {
           id: heartIdCounter++,
           x: 40 + Math.random() * (W - 80),
           y: -25,
-          size: type === "gold" ? 22 : 16 + Math.random() * 8,
+          size: type === "gold" ? 24 : 16 + Math.random() * 8,
           speed: state.frozen ? 0.4 : baseSpeed + Math.random() * 0.8,
           type,
           caught: false,
@@ -647,6 +660,8 @@ export default function HeartGame() {
             HEART_COLORS[h.type],
             HEART_GLOW[h.type],
             Math.max(0, h.opacity),
+            false,
+            h.type === "gold",
           );
           return h.opacity > 0;
         }
@@ -681,7 +696,7 @@ export default function HeartGame() {
             setScore(state.score);
 
             if (h.type === "gold")
-              addFloating("+3 ✨", h.x, h.y - 20, "#ffd700", 1.2);
+              addFloating("+3 ❤️‍🩹", h.x, h.y - 20, "#ff6b6b", 1.2);
             else if (h.type === "purple") {
               state.frozen = true;
               state.freezeUntil = timestamp + 3000;
@@ -726,7 +741,6 @@ export default function HeartGame() {
           }
           return false;
         }
-
         drawHeartShape(
           ctx,
           h.x,
@@ -736,6 +750,7 @@ export default function HeartGame() {
           HEART_GLOW[h.type],
           h.opacity,
           h.type === "broken",
+          h.type === "gold",
         );
         return true;
       });

@@ -243,6 +243,18 @@ export default function UniverseScene() {
 
     resize();
     restartLoop();
+    const audio = new Audio("/music/Saiko-COSASQUENOTEDIJE.mp3");
+    audio.loop = true;
+    audio.volume = 0.35;
+    audio.play().catch(() => {});
+
+    return () => {
+      state.running = false;
+      cancelAnimationFrame(state.animId);
+      window.removeEventListener("resize", resize);
+      audio.pause();
+      audio.src = "";
+    };
     window.addEventListener("resize", resize);
     return () => {
       state.running = false;
