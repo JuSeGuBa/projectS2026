@@ -14,9 +14,8 @@ interface Piece {
   isEmpty: boolean;
 }
 
-const GRIDS: Record<Difficulty, number> = { easy: 3, medium: 5, hard: 8 };
+const GRIDS: Record<Difficulty, number> = { easy: 3, medium: 4, hard: 5 };
 
-// ── PERSONALIZA ───────────────────────────────────────────────────────────────
 const IMAGES = [
   { src: "/photos/puzzle/puzzle-1.jpg", label: "foto 1" },
   { src: "/photos/puzzle/puzzle-2.jpeg", label: "foto 2" },
@@ -28,37 +27,43 @@ const MESSAGES: Record<string, string> = {
   "/photos/puzzle/puzzle-2.jpeg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
   "/photos/puzzle/puzzle-3.jpeg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
 };
-// ─────────────────────────────────────────────────────────────────────────────
 
+// Generates a SOLVABLE shuffle using valid slide moves
 function makePieces(grid: number): Piece[] {
-  const pieces: Piece[] = [];
-  for (let r = 0; r < grid; r++)
-    for (let c = 0; c < grid; c++)
-      pieces.push({
-        id: r * grid + c,
-        correctCol: c,
-        correctRow: r,
-        currentCol: c,
-        currentRow: r,
-        isEmpty: r === grid - 1 && c === grid - 1,
-      });
+  const total = grid * grid;
+  // Start solved
+  let positions = Array.from({ length: total }, (_, i) => i);
+  let emptyIdx = total - 1;
 
-  const positions = pieces.map((p) => ({
-    col: p.currentCol,
-    row: p.currentRow,
-  }));
-  for (let i = positions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [positions[i], positions[j]] = [positions[j], positions[i]];
+  // Do many random valid moves
+  const moves = grid === 3 ? 80 : grid === 4 ? 150 : 220;
+  for (let m = 0; m < moves; m++) {
+    const emptyRow = Math.floor(emptyIdx / grid);
+    const emptyCol = emptyIdx % grid;
+    const candidates: number[] = [];
+    if (emptyRow > 0) candidates.push((emptyRow - 1) * grid + emptyCol);
+    if (emptyRow < grid - 1) candidates.push((emptyRow + 1) * grid + emptyCol);
+    if (emptyCol > 0) candidates.push(emptyRow * grid + (emptyCol - 1));
+    if (emptyCol < grid - 1) candidates.push(emptyRow * grid + (emptyCol + 1));
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    [positions[emptyIdx], positions[pick]] = [
+      positions[pick],
+      positions[emptyIdx],
+    ];
+    emptyIdx = pick;
   }
-  return pieces.map((p, i) => ({
-    ...p,
-    currentCol: positions[i].col,
-    currentRow: positions[i].row,
+
+  return positions.map((correctPos, currentPos) => ({
+    id: correctPos,
+    correctCol: correctPos % grid,
+    correctRow: Math.floor(correctPos / grid),
+    currentCol: currentPos % grid,
+    currentRow: Math.floor(currentPos / grid),
+    isEmpty: correctPos === total - 1,
   }));
 }
 
-function solved(pieces: Piece[]) {
+function isSolved(pieces: Piece[]) {
   return pieces.every(
     (p) => p.currentCol === p.correctCol && p.currentRow === p.correctRow,
   );
@@ -77,8 +82,9 @@ export default function PuzzleGame() {
   const [moves, setMoves] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
-  const boardRef = useRef<HTMLDivElement>(null);
   const [boardSize, setBoardSize] = useState(300);
+  const [lastMoved, setLastMoved] = useState<number | null>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setTimeout(() => setInstrVisible(true), 60);
@@ -86,11 +92,11 @@ export default function PuzzleGame() {
 
   useEffect(() => {
     const calc = () => {
-      const W = Math.min(window.innerWidth - 40, 480);
-      const H = window.innerHeight * 0.62;
-      const grid = GRIDS[difficulty];
-      const cell = Math.min(Math.floor(W / grid), Math.floor(H / grid));
-      setBoardSize(cell * grid);
+      const W = Math.min(window.innerWidth - 32, 460);
+      const H = window.innerHeight * 0.6;
+      const g = GRIDS[difficulty];
+      const cell = Math.min(Math.floor(W / g), Math.floor(H / g));
+      setBoardSize(cell * g);
     };
     calc();
     window.addEventListener("resize", calc);
@@ -108,6 +114,7 @@ export default function PuzzleGame() {
     setPieces(makePieces(GRIDS[diff]));
     setMoves(0);
     setShowComplete(false);
+    setLastMoved(null);
     setScreen("playing");
   }, []);
 
@@ -134,11 +141,12 @@ export default function PuzzleGame() {
         return p;
       });
       setMoves((m) => m + 1);
-      if (solved(next))
+      setLastMoved(piece.id);
+      if (isSolved(next))
         setTimeout(() => {
           setScreen("complete");
-          setTimeout(() => setShowComplete(true), 600);
-        }, 200);
+          setTimeout(() => setShowComplete(true), 500);
+        }, 150);
       return next;
     });
   }, []);
@@ -146,15 +154,22 @@ export default function PuzzleGame() {
   const grid = GRIDS[difficulty];
   const CELL = Math.floor(boardSize / grid);
 
-  const diffLabels = {
-    easy: "fácil 3×3",
-    medium: "medio 5×5",
-    hard: "difícil 8×8",
-  };
-  const diffDesc = {
-    easy: "Para entrar en calor 🌸",
-    medium: "Un poco más de desafío 🔥",
-    hard: "Solo para valientes 👑",
+  const diffConfig = {
+    easy: {
+      label: "fácil 3×3",
+      desc: "Para entrar en calor 🌸",
+      color: "rgba(192,132,252,",
+    },
+    medium: {
+      label: "medio 4×4",
+      desc: "Un poco más de desafío 💪",
+      color: "rgba(255,107,157,",
+    },
+    hard: {
+      label: "difícil 5×5",
+      desc: "¡Tú puedes! 🔥",
+      color: "rgba(255,180,60,",
+    },
   };
 
   return (
@@ -192,7 +207,7 @@ export default function PuzzleGame() {
         ← volver
       </button>
 
-      {/* Instructions modal */}
+      {/* Instructions */}
       {showInstructions && (
         <div
           style={{
@@ -216,7 +231,7 @@ export default function PuzzleGame() {
               border: "1px solid rgba(255,107,157,0.2)",
               borderRadius: "8px",
               padding: "2rem",
-              maxWidth: "380px",
+              maxWidth: "360px",
               width: "100%",
               textAlign: "center",
               transform: instrVisible ? "scale(1)" : "scale(0.96)",
@@ -242,33 +257,33 @@ export default function PuzzleGame() {
                 fontSize: "0.78rem",
                 color: "rgba(200,180,255,0.4)",
                 fontStyle: "italic",
-                marginBottom: "1.5rem",
+                marginBottom: "1.4rem",
               }}
             >
-              cómo funciona
+              ¡tú puedes!
             </p>
             <div
               style={{
                 height: "1px",
                 background:
                   "linear-gradient(to right, transparent, rgba(255,107,157,0.3), transparent)",
-                marginBottom: "1.4rem",
+                marginBottom: "1.3rem",
               }}
             />
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "0.8rem",
+                gap: "0.75rem",
                 marginBottom: "1.8rem",
                 textAlign: "left",
               }}
             >
               {[
                 "🖼️  Elige una de nuestras fotos",
-                "⚡  Escoge la dificultad: fácil (3×3), medio (5×5) o difícil (8×8)",
-                "👆  Toca las piezas que están junto al espacio vacío para moverlas",
-                "🏆  Reconstruye la foto para ver el mensaje especial",
+                "⚡  Elige dificultad: fácil (3×3), medio (4×4) o difícil (5×5)",
+                "👆  Toca las piezas junto al hueco para moverlas",
+                "🏆  Arma la foto y recibe un mensaje especial ❤️‍🩹",
               ].map((tip) => (
                 <p
                   key={tip}
@@ -317,7 +332,7 @@ export default function PuzzleGame() {
             flexDirection: "column",
             alignItems: "center",
             padding: "5rem 1.5rem 2rem",
-            maxWidth: "480px",
+            maxWidth: "460px",
             width: "100%",
           }}
         >
@@ -348,8 +363,8 @@ export default function PuzzleGame() {
           <p
             style={{
               fontFamily: "Georgia, serif",
-              fontSize: "0.75rem",
-              color: "rgba(200,180,255,0.35)",
+              fontSize: "0.72rem",
+              color: "rgba(200,180,255,0.3)",
               letterSpacing: "0.2em",
               textTransform: "uppercase",
               marginBottom: "1rem",
@@ -361,7 +376,7 @@ export default function PuzzleGame() {
             style={{
               display: "flex",
               gap: "0.8rem",
-              marginBottom: "2rem",
+              marginBottom: "2.2rem",
               flexWrap: "wrap",
               justifyContent: "center",
             }}
@@ -371,11 +386,11 @@ export default function PuzzleGame() {
                 key={img.src}
                 onClick={() => setImage(img.src)}
                 style={{
-                  width: "90px",
-                  height: "90px",
+                  width: "88px",
+                  height: "88px",
                   padding: 0,
-                  border: `2px solid ${image === img.src ? "rgba(255,107,157,0.8)" : "rgba(255,107,157,0.15)"}`,
-                  borderRadius: "4px",
+                  border: `2px solid ${image === img.src ? "rgba(255,107,157,0.8)" : "rgba(255,107,157,0.12)"}`,
+                  borderRadius: "6px",
                   overflow: "hidden",
                   cursor: "pointer",
                   boxShadow:
@@ -398,8 +413,8 @@ export default function PuzzleGame() {
           <p
             style={{
               fontFamily: "Georgia, serif",
-              fontSize: "0.75rem",
-              color: "rgba(200,180,255,0.35)",
+              fontSize: "0.72rem",
+              color: "rgba(200,180,255,0.3)",
               letterSpacing: "0.2em",
               textTransform: "uppercase",
               marginBottom: "1rem",
@@ -416,33 +431,36 @@ export default function PuzzleGame() {
               width: "100%",
             }}
           >
-            {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-              <button
-                key={d}
-                onClick={() => setDifficulty(d)}
-                style={{
-                  padding: "0.7rem 1.2rem",
-                  background:
-                    difficulty === d ? "rgba(255,107,157,0.12)" : "transparent",
-                  border: `1px solid rgba(255,107,157,${difficulty === d ? 0.5 : 0.15})`,
-                  borderRadius: "4px",
-                  color:
-                    difficulty === d ? "#f8d4ef" : "rgba(200,180,255,0.35)",
-                  fontFamily: "Georgia, serif",
-                  fontSize: "0.88rem",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span>{diffLabels[d]}</span>
-                <span style={{ fontSize: "0.75rem", opacity: 0.6 }}>
-                  {diffDesc[d]}
-                </span>
-              </button>
-            ))}
+            {(["easy", "medium", "hard"] as Difficulty[]).map((d) => {
+              const cfg = diffConfig[d];
+              const sel = difficulty === d;
+              return (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  style={{
+                    padding: "0.75rem 1.2rem",
+                    background: sel ? `${cfg.color}0.1)` : "transparent",
+                    border: `1px solid ${cfg.color}${sel ? 0.5 : 0.12})`,
+                    borderRadius: "6px",
+                    color: sel ? "#f8d4ef" : "rgba(200,180,255,0.32)",
+                    fontFamily: "Georgia, serif",
+                    fontSize: "0.88rem",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    boxShadow: sel ? `0 0 16px ${cfg.color}0.12)` : "none",
+                  }}
+                >
+                  <span>{cfg.label}</span>
+                  <span style={{ fontSize: "0.75rem", opacity: 0.65 }}>
+                    {cfg.desc}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <button
@@ -452,12 +470,13 @@ export default function PuzzleGame() {
               background:
                 "linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.1))",
               border: "1px solid rgba(255,107,157,0.4)",
-              borderRadius: "3px",
+              borderRadius: "4px",
               color: "#f8d4ef",
               fontFamily: "Georgia, serif",
               fontSize: "1rem",
               letterSpacing: "0.1em",
               cursor: "pointer",
+              boxShadow: "0 0 20px rgba(255,107,157,0.1)",
             }}
           >
             ¡armar! 🧩
@@ -525,12 +544,13 @@ export default function PuzzleGame() {
               position: "relative",
               width: boardSize,
               height: boardSize,
-              border: "1px solid rgba(255,107,157,0.12)",
-              borderRadius: "4px",
+              border: "1px solid rgba(255,107,157,0.1)",
+              borderRadius: "6px",
               overflow: "hidden",
               boxShadow: "0 0 40px rgba(192,84,252,0.07)",
             }}
           >
+            {/* Ghost image */}
             <img
               src={image}
               alt="preview"
@@ -540,10 +560,12 @@ export default function PuzzleGame() {
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                opacity: 0.06,
+                opacity: 0.05,
                 pointerEvents: "none",
+                zIndex: 0,
               }}
             />
+
             {pieces.map((piece) => {
               if (piece.isEmpty)
                 return (
@@ -555,12 +577,21 @@ export default function PuzzleGame() {
                       top: piece.currentRow * CELL,
                       width: CELL,
                       height: CELL,
-                      background: "rgba(0,0,0,0.65)",
-                      border: "1px solid rgba(255,107,157,0.04)",
-                      transition: "left 0.1s ease, top 0.1s ease",
+                      background: "rgba(0,0,0,0.7)",
+                      zIndex: 1,
                     }}
                   />
                 );
+
+              const isAdjacentToEmpty = (() => {
+                const empty = pieces.find((p) => p.isEmpty)!;
+                const dr = Math.abs(piece.currentRow - empty.currentRow);
+                const dc = Math.abs(piece.currentCol - empty.currentCol);
+                return (dr === 1 && dc === 0) || (dr === 0 && dc === 1);
+              })();
+
+              const justMoved = lastMoved === piece.id;
+
               return (
                 <button
                   key={piece.id}
@@ -572,11 +603,18 @@ export default function PuzzleGame() {
                     width: CELL,
                     height: CELL,
                     padding: 0,
-                    border: "1px solid rgba(0,0,0,0.2)",
-                    cursor: "pointer",
+                    border: `1px solid ${isAdjacentToEmpty ? "rgba(255,107,157,0.35)" : "rgba(0,0,0,0.3)"}`,
+                    cursor: isAdjacentToEmpty ? "pointer" : "default",
                     overflow: "hidden",
-                    transition: "left 0.1s ease, top 0.1s ease",
+                    transition:
+                      "left 0.12s ease, top 0.12s ease, border-color 0.2s ease, box-shadow 0.2s ease",
                     boxSizing: "border-box",
+                    zIndex: justMoved ? 3 : 2,
+                    boxShadow: justMoved
+                      ? "inset 0 0 0 2px rgba(255,107,157,0.5)"
+                      : isAdjacentToEmpty
+                        ? "inset 0 0 0 1px rgba(255,107,157,0.2)"
+                        : "none",
                   }}
                 >
                   <div
@@ -588,6 +626,10 @@ export default function PuzzleGame() {
                       backgroundSize: "cover",
                       left: -piece.correctCol * CELL,
                       top: -piece.correctRow * CELL,
+                      filter: isAdjacentToEmpty
+                        ? "brightness(1.08)"
+                        : "brightness(1)",
+                      transition: "filter 0.2s ease",
                     }}
                   />
                 </button>
@@ -600,12 +642,12 @@ export default function PuzzleGame() {
               fontFamily: "Georgia, serif",
               fontSize: "0.7rem",
               color: "rgba(200,180,255,0.2)",
-              marginTop: "1rem",
-              letterSpacing: "0.15em",
+              marginTop: "0.8rem",
+              letterSpacing: "0.12em",
               textTransform: "uppercase",
             }}
           >
-            toca las piezas junto al hueco para moverlas
+            las piezas rosadas se pueden mover
           </p>
         </div>
       )}
@@ -640,9 +682,9 @@ export default function PuzzleGame() {
           </div>
           <div
             style={{
-              width: "min(260px, 65vw)",
-              height: "min(260px, 65vw)",
-              borderRadius: "6px",
+              width: "min(240px, 60vw)",
+              height: "min(240px, 60vw)",
+              borderRadius: "8px",
               overflow: "hidden",
               marginBottom: "1.5rem",
               border: "1px solid rgba(255,107,157,0.3)",
@@ -661,10 +703,10 @@ export default function PuzzleGame() {
               fontSize: "clamp(1.2rem, 4vw, 2rem)",
               fontWeight: 300,
               color: "#f8d4ef",
-              marginBottom: "0.6rem",
+              marginBottom: "0.5rem",
             }}
           >
-            ¡La armaste! ✨
+            ¡Lo armaste! ✨
           </p>
           <p
             style={{
@@ -693,11 +735,11 @@ export default function PuzzleGame() {
               color: "rgba(220,200,255,0.8)",
               fontStyle: "italic",
               lineHeight: 1.75,
-              maxWidth: "340px",
+              maxWidth: "320px",
               marginBottom: "2rem",
             }}
           >
-            {MESSAGES[image] || "Escribe aquí tu mensaje para esta foto ❤️‍🩹"}
+            {MESSAGES[image] || "Escribe aquí tu mensaje ❤️‍🩹"}
           </p>
           <div
             style={{
@@ -717,7 +759,7 @@ export default function PuzzleGame() {
                 background:
                   "linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.1))",
                 border: "1px solid rgba(255,107,157,0.35)",
-                borderRadius: "3px",
+                borderRadius: "4px",
                 color: "#f8d4ef",
                 fontFamily: "Georgia, serif",
                 fontSize: "0.9rem",
@@ -733,7 +775,7 @@ export default function PuzzleGame() {
                 padding: "0.8rem 1.5rem",
                 background: "transparent",
                 border: "1px solid rgba(192,132,252,0.2)",
-                borderRadius: "3px",
+                borderRadius: "4px",
                 color: "rgba(200,170,255,0.5)",
                 fontFamily: "Georgia, serif",
                 fontSize: "0.9rem",

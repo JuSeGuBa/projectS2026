@@ -134,7 +134,7 @@ export default function PhotosHub() {
           <PhotoButton
             onClick={() => navigate("/photos/puzzle")}
             icon="🧩"
-            title="Arma el puzzle"
+            title="Arma el puzzle Hermosa 👑"
             desc="Reconstruye nuestros momentos pieza a pieza"
             color="255,107,157"
           />
