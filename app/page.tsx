@@ -105,7 +105,7 @@ export default function Home() {
             textShadow: "0 0 40px rgba(192, 132, 252, 0.3)",
           }}
         >
-          Este espacio refleja un poco lo que eres para mi…
+          Este espacio es solo nuestro…
         </h1>
 
         <p
@@ -118,8 +118,7 @@ export default function Home() {
             letterSpacing: "0.06em",
           }}
         >
-          Uno dice lo que pienso y siento por ti y el otro es para entretenerte
-          cuando estés estresada… espero sirva jijiji
+          Elige cómo quieres sentirte hoy
         </p>
 
         <div
@@ -134,13 +133,19 @@ export default function Home() {
             onClick={() => navigate("/universe")}
             icon="✦"
             label="Explorar nuestro universo"
-            primary
+            variant="pink"
           />
           <NavButton
             onClick={() => navigate("/game")}
             icon="♡"
             label="Si estás estresada, juega"
-            primary={false}
+            variant="purple"
+          />
+          <NavButton
+            onClick={() => navigate("/photos")}
+            icon="✿"
+            label="Nuestras fotos"
+            variant="rose"
           />
         </div>
 
@@ -180,14 +185,36 @@ function NavButton({
   onClick,
   icon,
   label,
-  primary,
+  variant,
 }: {
   onClick: () => void;
   icon: string;
   label: string;
-  primary: boolean;
+  variant: "pink" | "purple" | "rose";
 }) {
   const [hovered, setHovered] = useState(false);
+
+  const colors = {
+    pink: {
+      bg: "rgba(255,107,157,",
+      border: "255,107,157",
+      text: "#ff9ec0",
+      textBase: "rgba(255,180,200,0.85)",
+    },
+    purple: {
+      bg: "rgba(192,132,252,",
+      border: "192,132,252",
+      text: "#d8b4fe",
+      textBase: "rgba(200,170,250,0.75)",
+    },
+    rose: {
+      bg: "rgba(255,130,160,",
+      border: "255,130,160",
+      text: "#ffb3c6",
+      textBase: "rgba(255,160,190,0.8)",
+    },
+  };
+  const c = colors[variant];
 
   return (
     <button
@@ -197,40 +224,16 @@ function NavButton({
       style={{
         width: "min(320px, 88vw)",
         padding: "1rem 2rem",
-        background: primary
-          ? hovered
-            ? "rgba(255, 107, 157, 0.18)"
-            : "rgba(255, 107, 157, 0.08)"
-          : hovered
-            ? "rgba(192, 132, 252, 0.14)"
-            : "rgba(192, 132, 252, 0.05)",
-        border: `1px solid ${
-          primary
-            ? hovered
-              ? "rgba(255,107,157,0.7)"
-              : "rgba(255,107,157,0.3)"
-            : hovered
-              ? "rgba(192,132,252,0.6)"
-              : "rgba(192,132,252,0.2)"
-        }`,
+        background: hovered ? `${c.bg}0.18)` : `${c.bg}0.08)`,
+        border: `1px solid rgba(${c.border},${hovered ? 0.7 : 0.3})`,
         borderRadius: "2px",
-        color: primary
-          ? hovered
-            ? "#ff9ec0"
-            : "rgba(255, 180, 200, 0.85)"
-          : hovered
-            ? "#d8b4fe"
-            : "rgba(200, 170, 250, 0.75)",
+        color: hovered ? c.text : c.textBase,
         fontFamily: "'Georgia', serif",
         fontSize: "0.95rem",
         letterSpacing: "0.1em",
         cursor: "pointer",
         transition: "all 0.35s ease",
-        boxShadow: hovered
-          ? primary
-            ? "0 0 24px rgba(255,107,157,0.25), inset 0 0 20px rgba(255,107,157,0.05)"
-            : "0 0 24px rgba(192,132,252,0.2), inset 0 0 20px rgba(192,132,252,0.04)"
-          : "none",
+        boxShadow: hovered ? `0 0 24px rgba(${c.border},0.25)` : "none",
         transform: hovered ? "scale(1.03)" : "scale(1)",
         display: "flex",
         alignItems: "center",
