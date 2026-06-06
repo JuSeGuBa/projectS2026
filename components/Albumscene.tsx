@@ -80,7 +80,7 @@ const PAGES: Page[] = [
   },
   {
     id: 12,
-    image: "/photos/album/page-12.jpg",
+    image: "/photos/album/page-12.mp4",
     date: "Fecha aquí",
     message: "Escribe aquí el mensaje corto de esta foto.",
   },
