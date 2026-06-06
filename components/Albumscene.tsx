@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface Page {
@@ -8,9 +8,10 @@ interface Page {
   image: string;
   date: string;
   message: string;
+  isVideo?: boolean;
 }
 
-// ── PERSONALIZA AQUÍ — agrega hasta 30 páginas ────────────────────────────────
+// ── PERSONALIZA AQUÍ ──────────────────────────────────────────────────────────
 const PAGES: Page[] = [
   {
     id: 1,
@@ -38,13 +39,13 @@ const PAGES: Page[] = [
   },
   {
     id: 5,
-    image: "/photos/album/page-05.jpg",
+    image: "/photos/album/page-05.png",
     date: "Fecha aquí",
     message: "Escribe aquí el mensaje corto de esta foto.",
   },
   {
     id: 6,
-    image: "/photos/album/page-06.jpg",
+    image: "/photos/album/page-06.png",
     date: "Fecha aquí",
     message: "Escribe aquí el mensaje corto de esta foto.",
   },
@@ -82,17 +83,18 @@ const PAGES: Page[] = [
     id: 12,
     image: "/photos/album/page-12.mp4",
     date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    message: "Escribe aquí el mensaje corto de este video.",
+    isVideo: true,
   },
   {
     id: 13,
-    image: "/photos/album/page-13.jpg",
+    image: "/photos/album/page-13.jpeg",
     date: "Fecha aquí",
     message: "Escribe aquí el mensaje corto de esta foto.",
   },
   {
     id: 14,
-    image: "/photos/album/page-14.jpg",
+    image: "/photos/album/page-14.jpeg",
     date: "Fecha aquí",
     message: "Escribe aquí el mensaje corto de esta foto.",
   },
@@ -116,24 +118,26 @@ const PAGES: Page[] = [
   },
   {
     id: 18,
-    image: "/photos/album/page-18.jpg",
+    image: "/photos/album/page-18.jpeg",
     date: "Fecha aquí",
     message: "Escribe aquí el mensaje corto de esta foto.",
   },
   {
     id: 19,
-    image: "/photos/album/page-19.jpg",
+    image: "/photos/album/page-19.jpeg",
     date: "Fecha aquí",
     message: "Escribe aquí el mensaje corto de esta foto.",
   },
   {
     id: 20,
-    image: "/photos/album/page-20.jpg",
+    image: "/photos/album/page-20.jpeg",
     date: "Fecha aquí",
     message: "Escribe aquí el mensaje corto de esta foto.",
   },
 ];
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Last blank page is added automatically below
 
 export default function AlbumScene() {
   const router = useRouter();
@@ -142,10 +146,28 @@ export default function AlbumScene() {
   const [animating, setAnimating] = useState(false);
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
+  const [introVisible, setIntroVisible] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+
+  const allPages = [
+    ...PAGES,
+    { id: 99, image: "", date: "", message: "", isVideo: false },
+  ];
+  const isLastPage = current === allPages.length - 1;
 
   useEffect(() => {
-    setTimeout(() => setVisible(true), 100);
+    setTimeout(() => setIntroVisible(true), 60);
   }, []);
+
+  const closeIntro = () => {
+    setIntroVisible(false);
+    setTimeout(() => {
+      setShowIntro(false);
+      setVisible(true);
+    }, 350);
+  };
 
   const goBack = () => {
     setLeaving(true);
@@ -154,19 +176,16 @@ export default function AlbumScene() {
 
   const navigate = (dir: "next" | "prev") => {
     if (animating) return;
-    if (dir === "next" && current >= PAGES.length - 1) return;
+    if (dir === "next" && current >= allPages.length - 1) return;
     if (dir === "prev" && current <= 0) return;
-
     setAnimating(true);
     setDirection(dir);
     setTimeout(() => {
       setCurrent((c) => (dir === "next" ? c + 1 : c - 1));
       setAnimating(false);
-    }, 350);
+    }, 380);
   };
 
-  // Touch swipe
-  const [touchStart, setTouchStart] = useState<number | null>(null);
   const onTouchStart = (e: React.TouchEvent) =>
     setTouchStart(e.touches[0].clientX);
   const onTouchEnd = (e: React.TouchEvent) => {
@@ -176,7 +195,7 @@ export default function AlbumScene() {
     setTouchStart(null);
   };
 
-  const page = PAGES[current];
+  const page = allPages[current];
 
   return (
     <div
@@ -199,7 +218,7 @@ export default function AlbumScene() {
           position: "fixed",
           top: "1.2rem",
           left: "1.2rem",
-          zIndex: 20,
+          zIndex: 30,
           background: "rgba(20,10,35,0.7)",
           border: "1px solid rgba(192,132,252,0.2)",
           borderRadius: "2px",
@@ -215,21 +234,108 @@ export default function AlbumScene() {
         ← volver
       </button>
 
-      {/* Page counter */}
       <div
         style={{
           position: "fixed",
           top: "1.2rem",
           right: "1.5rem",
-          zIndex: 20,
+          zIndex: 30,
           fontFamily: "Georgia, serif",
           fontSize: "0.75rem",
           color: "rgba(200,180,255,0.35)",
           letterSpacing: "0.1em",
         }}
       >
-        {current + 1} / {PAGES.length}
+        {isLastPage ? "fin" : `${current + 1} / ${PAGES.length}`}
       </div>
+
+      {/* Intro modal */}
+      {showIntro && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(4,2,8,0.93)",
+            backdropFilter: "blur(10px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.5rem",
+            opacity: introVisible ? 1 : 0,
+            transition: "opacity 0.35s ease",
+          }}
+        >
+          <div
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(22,10,42,0.99), rgba(12,6,24,0.99))",
+              border: "1px solid rgba(255,107,157,0.2)",
+              borderRadius: "8px",
+              padding: "2rem 2rem 1.8rem",
+              maxWidth: "360px",
+              width: "100%",
+              textAlign: "center",
+              transform: introVisible ? "scale(1)" : "scale(0.96)",
+              transition: "transform 0.35s ease",
+              boxShadow: "0 0 60px rgba(192,84,252,0.1)",
+            }}
+          >
+            <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>📖</div>
+            <h2
+              style={{
+                fontFamily: "Georgia, serif",
+                fontSize: "1.2rem",
+                fontWeight: 300,
+                color: "#f8d4ef",
+                marginBottom: "1rem",
+              }}
+            >
+              Nuestro álbum
+            </h2>
+            <div
+              style={{
+                height: "1px",
+                background:
+                  "linear-gradient(to right, transparent, rgba(255,107,157,0.3), transparent)",
+                marginBottom: "1rem",
+              }}
+            />
+            <p
+              style={{
+                fontFamily: "Georgia, serif",
+                fontSize: "0.92rem",
+                color: "rgba(220,200,255,0.75)",
+                lineHeight: 1.75,
+                fontStyle: "italic",
+                marginBottom: "1.5rem",
+              }}
+            >
+              El orden de estas fotos no sigue nuestra historia. Son simplemente
+              momentos importantes que quiero que recuerdes. Cada uno tiene un
+              pedazo de lo nuestro. 💕
+            </p>
+            <button
+              onClick={closeIntro}
+              style={{
+                width: "100%",
+                padding: "0.8rem",
+                background:
+                  "linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.1))",
+                border: "1px solid rgba(255,107,157,0.35)",
+                borderRadius: "3px",
+                color: "#f8d4ef",
+                fontFamily: "Georgia, serif",
+                fontSize: "0.95rem",
+                letterSpacing: "0.1em",
+                cursor: "pointer",
+              }}
+            >
+              abrir el álbum ♡
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Book */}
       <div
@@ -238,95 +344,270 @@ export default function AlbumScene() {
           transform: visible ? "translateY(0)" : "translateY(20px)",
           transition: "opacity 0.8s ease, transform 0.8s ease",
           width: "100%",
-          maxWidth: "400px",
+          maxWidth: "420px",
+          perspective: "1200px",
         }}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {/* Page */}
-        <div
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(22,10,42,0.98), rgba(12,6,24,0.98))",
-            border: "1px solid rgba(255,107,157,0.15)",
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(192,84,252,0.06)",
-            opacity: animating ? 0 : 1,
-            transform: animating
-              ? direction === "next"
-                ? "translateX(-30px) scale(0.97)"
-                : "translateX(30px) scale(0.97)"
-              : "translateX(0) scale(1)",
-            transition: "opacity 0.3s ease, transform 0.3s ease",
-          }}
-        >
-          {/* Photo */}
+        {/* Book wrapper with 3D shadow */}
+        <div style={{ position: "relative" }}>
+          {/* Book spine shadow */}
           <div
             style={{
-              width: "100%",
-              aspectRatio: "4/3",
-              overflow: "hidden",
+              position: "absolute",
+              left: 0,
+              top: "4px",
+              bottom: "4px",
+              width: "12px",
+              background:
+                "linear-gradient(to right, rgba(0,0,0,0.5), rgba(0,0,0,0.1))",
+              borderRadius: "3px 0 0 3px",
+              zIndex: 0,
+            }}
+          />
+          {/* Page stack illusion (behind) */}
+          {[3, 2, 1].map((i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                right: -i * 2,
+                top: i * 1,
+                left: 0,
+                bottom: -i * 1,
+                background: "rgba(240,230,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.04)",
+                borderRadius: "4px 6px 6px 4px",
+                zIndex: 0,
+              }}
+            />
+          ))}
+
+          {/* Main page with flip animation */}
+          <div
+            style={{
               position: "relative",
+              zIndex: 1,
+              background:
+                "linear-gradient(135deg, rgba(24,12,44,0.98) 0%, rgba(14,7,26,0.98) 100%)",
+              border: "1px solid rgba(255,107,157,0.15)",
+              borderRadius: "4px 8px 8px 4px",
+              overflow: "hidden",
+              boxShadow:
+                "4px 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(192,84,252,0.06), inset -2px 0 8px rgba(0,0,0,0.3)",
+              opacity: animating ? 0 : 1,
+              transform: animating
+                ? direction === "next"
+                  ? "rotateY(-8deg) translateX(-12px) scale(0.97)"
+                  : "rotateY(8deg) translateX(12px) scale(0.97)"
+                : "rotateY(0deg) translateX(0) scale(1)",
+              transition: "opacity 0.32s ease, transform 0.32s ease",
+              transformOrigin:
+                direction === "next" ? "left center" : "right center",
             }}
           >
-            <img
-              src={page.image}
-              alt={`página ${current + 1}`}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
+            {/* Page number top */}
             <div
               style={{
                 position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(to bottom, transparent 55%, rgba(12,6,24,0.7))",
-              }}
-            />
-            {/* Date over photo */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: "0.8rem",
-                left: "1rem",
+                top: "0.6rem",
+                right: "0.8rem",
+                zIndex: 2,
                 fontFamily: "Georgia, serif",
-                fontSize: "0.7rem",
-                color: "rgba(255,180,210,0.6)",
+                fontSize: "0.6rem",
+                color: "rgba(255,180,210,0.25)",
                 letterSpacing: "0.1em",
               }}
             >
-              {page.date}
+              {isLastPage ? "" : current + 1}
             </div>
-          </div>
 
-          {/* Text section */}
-          <div style={{ padding: "1.4rem 1.5rem 1.8rem" }}>
-            <div
-              style={{
-                height: "1px",
-                background:
-                  "linear-gradient(to right, rgba(255,107,157,0.25), transparent)",
-                marginBottom: "1.1rem",
-              }}
-            />
-            <p
-              style={{
-                fontFamily: "Georgia, serif",
-                fontSize: "clamp(0.9rem, 2.5vw, 1rem)",
-                color: "rgba(220,200,255,0.82)",
-                lineHeight: 1.8,
-                fontStyle: "italic",
-                margin: 0,
-              }}
-            >
-              {page.message}
-            </p>
+            {isLastPage ? (
+              /* ── LAST PAGE: blank with message ── */
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "420px",
+                  padding: "3rem 2rem",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: "40px",
+                    height: "1px",
+                    background: "rgba(255,107,157,0.2)",
+                    marginBottom: "2.5rem",
+                  }}
+                />
+                <p
+                  style={{
+                    fontFamily: "'Georgia', serif",
+                    fontSize: "clamp(1.1rem, 3.5vw, 1.4rem)",
+                    fontWeight: 300,
+                    color: "rgba(240,220,255,0.6)",
+                    lineHeight: 1.9,
+                    fontStyle: "italic",
+                    letterSpacing: "0.04em",
+                    maxWidth: "280px",
+                  }}
+                >
+                  Continuará…
+                </p>
+                <p
+                  style={{
+                    fontFamily: "'Georgia', serif",
+                    fontSize: "0.85rem",
+                    color: "rgba(255,107,157,0.3)",
+                    fontStyle: "italic",
+                    marginTop: "1.5rem",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  seguiremos llenando estas páginas juntos
+                </p>
+                <div
+                  style={{
+                    marginTop: "2.5rem",
+                    fontSize: "1.2rem",
+                    opacity: 0.3,
+                  }}
+                >
+                  ♡
+                </div>
+                <div
+                  style={{
+                    width: "40px",
+                    height: "1px",
+                    background: "rgba(255,107,157,0.2)",
+                    marginTop: "2.5rem",
+                  }}
+                />
+              </div>
+            ) : (
+              /* ── NORMAL PAGE ── */
+              <>
+                {/* Media area */}
+                <div
+                  onClick={() => !page.isVideo && setFullscreen(true)}
+                  style={{
+                    width: "100%",
+                    aspectRatio: "4/3",
+                    overflow: "hidden",
+                    position: "relative",
+                    cursor: page.isVideo ? "default" : "zoom-in",
+                  }}
+                >
+                  {page.isVideo ? (
+                    <video
+                      src={page.image}
+                      controls
+                      playsInline
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src={page.image}
+                      alt={`página ${current + 1}`}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  )}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background:
+                        "linear-gradient(to bottom, transparent 55%, rgba(14,7,26,0.75))",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "0.8rem",
+                      left: "1rem",
+                      fontFamily: "Georgia, serif",
+                      fontSize: "0.68rem",
+                      color: "rgba(255,180,210,0.55)",
+                      letterSpacing: "0.1em",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {page.date}
+                  </div>
+                  {!page.isVideo && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "0.7rem",
+                        right: "0.8rem",
+                        fontSize: "0.7rem",
+                        color: "rgba(255,180,210,0.3)",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      🔍
+                    </div>
+                  )}
+                </div>
+
+                {/* Text */}
+                <div style={{ padding: "1.2rem 1.5rem 1.6rem" }}>
+                  {/* Decorative line */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "0.9rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        flex: 1,
+                        height: "1px",
+                        background:
+                          "linear-gradient(to right, rgba(255,107,157,0.2), transparent)",
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: "0.5rem",
+                        color: "rgba(255,107,157,0.3)",
+                      }}
+                    >
+                      ✦
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: "Georgia, serif",
+                      fontSize: "clamp(0.88rem, 2.4vw, 0.98rem)",
+                      color: "rgba(220,200,255,0.8)",
+                      lineHeight: 1.8,
+                      fontStyle: "italic",
+                      margin: 0,
+                    }}
+                  >
+                    {page.message}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -336,27 +617,27 @@ export default function AlbumScene() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: "1.5rem",
-            marginTop: "1.5rem",
+            gap: "1.2rem",
+            marginTop: "1.4rem",
           }}
         >
           <button
             onClick={() => navigate("prev")}
             disabled={current === 0 || animating}
             style={{
-              width: "44px",
-              height: "44px",
+              width: "42px",
+              height: "42px",
               borderRadius: "50%",
               background:
                 current === 0
                   ? "rgba(255,107,157,0.03)"
                   : "rgba(255,107,157,0.08)",
-              border: `1px solid rgba(255,107,157,${current === 0 ? 0.1 : 0.25})`,
+              border: `1px solid rgba(255,107,157,${current === 0 ? 0.08 : 0.22})`,
               color:
                 current === 0
-                  ? "rgba(255,107,157,0.2)"
+                  ? "rgba(255,107,157,0.18)"
                   : "rgba(255,150,190,0.7)",
-              fontSize: "1.1rem",
+              fontSize: "1rem",
               cursor: current === 0 ? "not-allowed" : "pointer",
               display: "flex",
               alignItems: "center",
@@ -367,9 +648,17 @@ export default function AlbumScene() {
             ←
           </button>
 
-          {/* Dots */}
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {PAGES.map((_, i) => (
+          {/* Dots — max 20 visible */}
+          <div
+            style={{
+              display: "flex",
+              gap: "5px",
+              alignItems: "center",
+              maxWidth: "200px",
+              overflow: "hidden",
+            }}
+          >
+            {allPages.map((_, i) => (
               <button
                 key={i}
                 onClick={() => {
@@ -379,16 +668,19 @@ export default function AlbumScene() {
                   setTimeout(() => {
                     setCurrent(i);
                     setAnimating(false);
-                  }, 350);
+                  }, 380);
                 }}
                 style={{
-                  width: i === current ? "20px" : "6px",
-                  height: "6px",
+                  flexShrink: 0,
+                  width: i === current ? "18px" : "5px",
+                  height: "5px",
                   borderRadius: "3px",
                   background:
                     i === current
                       ? "linear-gradient(to right, #ff6b9d, #c084fc)"
-                      : "rgba(255,107,157,0.2)",
+                      : i === allPages.length - 1
+                        ? "rgba(255,107,157,0.12)"
+                        : "rgba(255,107,157,0.18)",
                   border: "none",
                   cursor: "pointer",
                   padding: 0,
@@ -400,22 +692,23 @@ export default function AlbumScene() {
 
           <button
             onClick={() => navigate("next")}
-            disabled={current === PAGES.length - 1 || animating}
+            disabled={current === allPages.length - 1 || animating}
             style={{
-              width: "44px",
-              height: "44px",
+              width: "42px",
+              height: "42px",
               borderRadius: "50%",
               background:
-                current === PAGES.length - 1
+                current === allPages.length - 1
                   ? "rgba(255,107,157,0.03)"
                   : "rgba(255,107,157,0.08)",
-              border: `1px solid rgba(255,107,157,${current === PAGES.length - 1 ? 0.1 : 0.25})`,
+              border: `1px solid rgba(255,107,157,${current === allPages.length - 1 ? 0.08 : 0.22})`,
               color:
-                current === PAGES.length - 1
-                  ? "rgba(255,107,157,0.2)"
+                current === allPages.length - 1
+                  ? "rgba(255,107,157,0.18)"
                   : "rgba(255,150,190,0.7)",
-              fontSize: "1.1rem",
-              cursor: current === PAGES.length - 1 ? "not-allowed" : "pointer",
+              fontSize: "1rem",
+              cursor:
+                current === allPages.length - 1 ? "not-allowed" : "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -430,9 +723,9 @@ export default function AlbumScene() {
           style={{
             textAlign: "center",
             fontFamily: "Georgia, serif",
-            fontSize: "0.65rem",
-            color: "rgba(200,180,255,0.18)",
-            marginTop: "1rem",
+            fontSize: "0.62rem",
+            color: "rgba(200,180,255,0.15)",
+            marginTop: "0.8rem",
             letterSpacing: "0.15em",
             textTransform: "uppercase",
           }}
@@ -440,6 +733,58 @@ export default function AlbumScene() {
           desliza o usa las flechas
         </p>
       </div>
+
+      {/* Fullscreen photo viewer */}
+      {fullscreen && !page.isVideo && (
+        <div
+          onClick={() => setFullscreen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            background: "rgba(2,1,6,0.97)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+            cursor: "zoom-out",
+          }}
+        >
+          <img
+            src={page.image}
+            alt="foto completa"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
+              borderRadius: "4px",
+              boxShadow: "0 0 60px rgba(0,0,0,0.8)",
+            }}
+          />
+          <button
+            onClick={() => setFullscreen(false)}
+            style={{
+              position: "fixed",
+              top: "1.2rem",
+              right: "1.2rem",
+              background: "rgba(20,10,35,0.8)",
+              border: "1px solid rgba(192,132,252,0.2)",
+              borderRadius: "50%",
+              width: "36px",
+              height: "36px",
+              color: "rgba(220,200,255,0.6)",
+              fontSize: "0.9rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ interface Moment {
   side: "left" | "right";
 }
 
-// ── PERSONALIZA AQUÍ — agrega/edita tus momentos ─────────────────────────────
+// ── PERSONALIZA AQUÍ ──────────────────────────────────────────────────────────
 const MOMENTS: Moment[] = [
   {
     id: 1,
@@ -105,10 +105,20 @@ export default function TimelineScene() {
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [instrVisible, setInstrVisible] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => setVisible(true), 100);
+    setTimeout(() => setInstrVisible(true), 60);
   }, []);
+
+  const closeInstructions = () => {
+    setInstrVisible(false);
+    setTimeout(() => {
+      setShowInstructions(false);
+      setTimeout(() => setVisible(true), 100);
+    }, 350);
+  };
 
   const goBack = () => {
     setLeaving(true);
@@ -163,6 +173,120 @@ export default function TimelineScene() {
       >
         ← volver
       </button>
+
+      {/* Instructions modal */}
+      {showInstructions && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(4,2,8,0.93)",
+            backdropFilter: "blur(10px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.5rem",
+            opacity: instrVisible ? 1 : 0,
+            transition: "opacity 0.35s ease",
+          }}
+        >
+          <div
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(20,8,40,0.99), rgba(10,4,22,0.99))",
+              border: "1px solid rgba(192,132,252,0.2)",
+              borderRadius: "8px",
+              padding: "2rem",
+              maxWidth: "380px",
+              width: "100%",
+              textAlign: "center",
+              transform: instrVisible ? "scale(1)" : "scale(0.96)",
+              transition: "transform 0.35s ease",
+              boxShadow: "0 0 60px rgba(192,84,252,0.1)",
+            }}
+          >
+            <div style={{ fontSize: "2rem", marginBottom: "0.8rem" }}>✦</div>
+            <h2
+              style={{
+                fontFamily: "Georgia, serif",
+                fontSize: "1.3rem",
+                fontWeight: 300,
+                color: "#f8d4ef",
+                marginBottom: "0.4rem",
+              }}
+            >
+              Nuestra historia
+            </h2>
+            <p
+              style={{
+                fontFamily: "Georgia, serif",
+                fontSize: "0.78rem",
+                color: "rgba(200,180,255,0.4)",
+                fontStyle: "italic",
+                marginBottom: "1.5rem",
+              }}
+            >
+              cómo funciona
+            </p>
+            <div
+              style={{
+                height: "1px",
+                background:
+                  "linear-gradient(to right, transparent, rgba(192,132,252,0.3), transparent)",
+                marginBottom: "1.4rem",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.8rem",
+                marginBottom: "1.8rem",
+                textAlign: "left",
+              }}
+            >
+              {[
+                "✦  Los momentos se desbloquean uno a uno",
+                "🔒  Toca un momento para abrirlo y ver la foto y el mensaje",
+                "⬇️  Al abrir uno, se desbloquea el siguiente",
+                "♡  Ve descubriendo nuestra historia poco a poco",
+              ].map((tip) => (
+                <p
+                  key={tip}
+                  style={{
+                    fontFamily: "Georgia, serif",
+                    fontSize: "0.82rem",
+                    color: "rgba(210,190,255,0.65)",
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {tip}
+                </p>
+              ))}
+            </div>
+            <button
+              onClick={closeInstructions}
+              style={{
+                width: "100%",
+                padding: "0.85rem",
+                background:
+                  "linear-gradient(135deg, rgba(192,132,252,0.15), rgba(255,107,157,0.1))",
+                border: "1px solid rgba(192,132,252,0.35)",
+                borderRadius: "3px",
+                color: "#f8d4ef",
+                fontFamily: "Georgia, serif",
+                fontSize: "0.95rem",
+                letterSpacing: "0.1em",
+                cursor: "pointer",
+              }}
+            >
+              empezar ✦
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div
@@ -231,7 +355,6 @@ export default function TimelineScene() {
           padding: "0 1rem",
         }}
       >
-        {/* Vertical line */}
         <div
           style={{
             position: "absolute",
@@ -249,7 +372,6 @@ export default function TimelineScene() {
         {MOMENTS.map((moment, idx) => {
           const locked = !unlocked.has(moment.id);
           const isLeft = moment.side === "left";
-
           return (
             <div
               key={moment.id}
@@ -263,7 +385,6 @@ export default function TimelineScene() {
                 transition: `opacity 0.7s ease ${idx * 0.08}s, transform 0.7s ease ${idx * 0.08}s`,
               }}
             >
-              {/* Dot */}
               <div
                 style={{
                   position: "absolute",
@@ -283,7 +404,6 @@ export default function TimelineScene() {
                 }}
               />
 
-              {/* Card */}
               <button
                 onClick={() => openMoment(moment)}
                 style={{
@@ -386,7 +506,6 @@ export default function TimelineScene() {
           );
         })}
 
-        {/* End */}
         <div
           style={{
             textAlign: "center",
@@ -410,7 +529,7 @@ export default function TimelineScene() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal — imagen completa sin cortar */}
       {selected && (
         <div
           onClick={closeModal}
@@ -435,7 +554,7 @@ export default function TimelineScene() {
                 "linear-gradient(135deg, rgba(20,8,40,0.99), rgba(10,4,22,0.99))",
               border: "1px solid rgba(255,107,157,0.2)",
               borderRadius: "8px",
-              maxWidth: "380px",
+              maxWidth: "400px",
               width: "100%",
               overflow: "hidden",
               transform: modalVisible
@@ -445,29 +564,31 @@ export default function TimelineScene() {
               boxShadow: "0 0 60px rgba(192,84,252,0.12)",
             }}
           >
+            {/* Imagen completa sin recortar */}
             <div
               style={{
                 width: "100%",
-                height: "200px",
-                overflow: "hidden",
-                position: "relative",
+                background: "#080412",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0.8rem 0.8rem 0",
               }}
             >
               <img
                 src={selected.image}
                 alt={selected.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-              <div
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(to bottom, transparent 60%, rgba(10,4,22,0.8))",
+                  width: "100%",
+                  maxHeight: "300px",
+                  objectFit: "contain",
+                  borderRadius: "4px",
+                  display: "block",
                 }}
               />
             </div>
-            <div style={{ padding: "1.5rem" }}>
+
+            <div style={{ padding: "1.2rem 1.5rem 1.4rem" }}>
               <p
                 style={{
                   fontFamily: "Georgia, serif",
@@ -482,10 +603,10 @@ export default function TimelineScene() {
               <h2
                 style={{
                   fontFamily: "Georgia, serif",
-                  fontSize: "1.2rem",
+                  fontSize: "1.15rem",
                   color: "#f8d4ef",
                   fontWeight: 300,
-                  margin: "0 0 1rem",
+                  margin: "0 0 0.8rem",
                 }}
               >
                 {selected.title}
@@ -495,17 +616,17 @@ export default function TimelineScene() {
                   height: "1px",
                   background:
                     "linear-gradient(to right, rgba(255,107,157,0.3), transparent)",
-                  marginBottom: "1rem",
+                  marginBottom: "0.8rem",
                 }}
               />
               <p
                 style={{
                   fontFamily: "Georgia, serif",
-                  fontSize: "0.95rem",
+                  fontSize: "0.92rem",
                   color: "rgba(220,200,255,0.82)",
-                  lineHeight: 1.8,
+                  lineHeight: 1.75,
                   fontStyle: "italic",
-                  margin: "0 0 1.5rem",
+                  margin: "0 0 1.2rem",
                 }}
               >
                 {selected.message}
@@ -519,7 +640,7 @@ export default function TimelineScene() {
               >
                 <span
                   style={{
-                    fontSize: "0.68rem",
+                    fontSize: "0.65rem",
                     color: "rgba(255,107,157,0.3)",
                     letterSpacing: "0.15em",
                     textTransform: "uppercase",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 type Difficulty = "easy" | "medium" | "hard";
@@ -14,20 +14,19 @@ interface Piece {
   isEmpty: boolean;
 }
 
-const GRIDS: Record<Difficulty, number> = { easy: 3, medium: 4, hard: 5 };
+const GRIDS: Record<Difficulty, number> = { easy: 3, medium: 5, hard: 8 };
 
-// ── PERSONALIZA: pon los nombres reales de tus fotos ─────────────────────────
+// ── PERSONALIZA ───────────────────────────────────────────────────────────────
 const IMAGES = [
   { src: "/photos/puzzle/puzzle-1.jpg", label: "foto 1" },
   { src: "/photos/puzzle/puzzle-2.jpeg", label: "foto 2" },
-  { src: "/photos/puzzle/puzzle-3..jpeg", label: "foto 3" },
+  { src: "/photos/puzzle/puzzle-3.jpeg", label: "foto 3" },
 ];
 
-// ── PERSONALIZA: mensajes al completar cada foto ─────────────────────────────
 const MESSAGES: Record<string, string> = {
   "/photos/puzzle/puzzle-1.jpg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
-  "/photos/puzzle/puzzle-2.jpg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
-  "/photos/puzzle/puzzle-3.jpg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
+  "/photos/puzzle/puzzle-2.jpeg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
+  "/photos/puzzle/puzzle-3.jpeg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -44,7 +43,6 @@ function makePieces(grid: number): Piece[] {
         isEmpty: r === grid - 1 && c === grid - 1,
       });
 
-  // Shuffle positions
   const positions = pieces.map((p) => ({
     col: p.currentCol,
     row: p.currentRow,
@@ -71,6 +69,8 @@ export default function PuzzleGame() {
   const [screen, setScreen] = useState<"select" | "playing" | "complete">(
     "select",
   );
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [instrVisible, setInstrVisible] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [image, setImage] = useState(IMAGES[0].src);
   const [pieces, setPieces] = useState<Piece[]>([]);
@@ -78,6 +78,24 @@ export default function PuzzleGame() {
   const [leaving, setLeaving] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
   const boardRef = useRef<HTMLDivElement>(null);
+  const [boardSize, setBoardSize] = useState(300);
+
+  useEffect(() => {
+    setTimeout(() => setInstrVisible(true), 60);
+  }, []);
+
+  useEffect(() => {
+    const calc = () => {
+      const W = Math.min(window.innerWidth - 40, 480);
+      const H = window.innerHeight * 0.62;
+      const grid = GRIDS[difficulty];
+      const cell = Math.min(Math.floor(W / grid), Math.floor(H / grid));
+      setBoardSize(cell * grid);
+    };
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [difficulty]);
 
   const goBack = () => {
     setLeaving(true);
@@ -100,7 +118,6 @@ export default function PuzzleGame() {
       const dr = Math.abs(piece.currentRow - empty.currentRow);
       const dc = Math.abs(piece.currentCol - empty.currentCol);
       if (!((dr === 1 && dc === 0) || (dr === 0 && dc === 1))) return prev;
-
       const next = prev.map((p) => {
         if (p.id === piece.id)
           return {
@@ -127,17 +144,18 @@ export default function PuzzleGame() {
   }, []);
 
   const grid = GRIDS[difficulty];
-  const CELL = Math.min(
-    Math.floor(
-      (Math.min(typeof window !== "undefined" ? window.innerWidth : 400, 480) -
-        40) /
-        grid,
-    ),
-    Math.floor(
-      (typeof window !== "undefined" ? window.innerHeight * 0.62 : 400) / grid,
-    ),
-  );
-  const board = CELL * grid;
+  const CELL = Math.floor(boardSize / grid);
+
+  const diffLabels = {
+    easy: "fácil 3×3",
+    medium: "medio 5×5",
+    hard: "difícil 8×8",
+  };
+  const diffDesc = {
+    easy: "Para entrar en calor 🌸",
+    medium: "Un poco más de desafío 🔥",
+    hard: "Solo para valientes 👑",
+  };
 
   return (
     <div
@@ -174,7 +192,124 @@ export default function PuzzleGame() {
         ← volver
       </button>
 
-      {/* ── SELECT ── */}
+      {/* Instructions modal */}
+      {showInstructions && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(4,2,8,0.93)",
+            backdropFilter: "blur(10px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.5rem",
+            opacity: instrVisible ? 1 : 0,
+            transition: "opacity 0.35s ease",
+          }}
+        >
+          <div
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(20,8,40,0.99), rgba(10,4,22,0.99))",
+              border: "1px solid rgba(255,107,157,0.2)",
+              borderRadius: "8px",
+              padding: "2rem",
+              maxWidth: "380px",
+              width: "100%",
+              textAlign: "center",
+              transform: instrVisible ? "scale(1)" : "scale(0.96)",
+              transition: "transform 0.35s ease",
+              boxShadow: "0 0 60px rgba(192,84,252,0.1)",
+            }}
+          >
+            <div style={{ fontSize: "2rem", marginBottom: "0.8rem" }}>🧩</div>
+            <h2
+              style={{
+                fontFamily: "Georgia, serif",
+                fontSize: "1.3rem",
+                fontWeight: 300,
+                color: "#f8d4ef",
+                marginBottom: "0.4rem",
+              }}
+            >
+              Arma el puzzle
+            </h2>
+            <p
+              style={{
+                fontFamily: "Georgia, serif",
+                fontSize: "0.78rem",
+                color: "rgba(200,180,255,0.4)",
+                fontStyle: "italic",
+                marginBottom: "1.5rem",
+              }}
+            >
+              cómo funciona
+            </p>
+            <div
+              style={{
+                height: "1px",
+                background:
+                  "linear-gradient(to right, transparent, rgba(255,107,157,0.3), transparent)",
+                marginBottom: "1.4rem",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.8rem",
+                marginBottom: "1.8rem",
+                textAlign: "left",
+              }}
+            >
+              {[
+                "🖼️  Elige una de nuestras fotos",
+                "⚡  Escoge la dificultad: fácil (3×3), medio (5×5) o difícil (8×8)",
+                "👆  Toca las piezas que están junto al espacio vacío para moverlas",
+                "🏆  Reconstruye la foto para ver el mensaje especial",
+              ].map((tip) => (
+                <p
+                  key={tip}
+                  style={{
+                    fontFamily: "Georgia, serif",
+                    fontSize: "0.82rem",
+                    color: "rgba(210,190,255,0.65)",
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {tip}
+                </p>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                setInstrVisible(false);
+                setTimeout(() => setShowInstructions(false), 300);
+              }}
+              style={{
+                width: "100%",
+                padding: "0.85rem",
+                background:
+                  "linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.1))",
+                border: "1px solid rgba(255,107,157,0.35)",
+                borderRadius: "3px",
+                color: "#f8d4ef",
+                fontFamily: "Georgia, serif",
+                fontSize: "0.95rem",
+                letterSpacing: "0.1em",
+                cursor: "pointer",
+              }}
+            >
+              ¡entendido! 🧩
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SELECT */}
       {screen === "select" && (
         <div
           style={{
@@ -275,10 +410,10 @@ export default function PuzzleGame() {
           <div
             style={{
               display: "flex",
-              gap: "0.8rem",
+              flexDirection: "column",
+              gap: "0.6rem",
               marginBottom: "2.5rem",
-              flexWrap: "wrap",
-              justifyContent: "center",
+              width: "100%",
             }}
           >
             {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
@@ -286,23 +421,26 @@ export default function PuzzleGame() {
                 key={d}
                 onClick={() => setDifficulty(d)}
                 style={{
-                  padding: "0.6rem 1.2rem",
+                  padding: "0.7rem 1.2rem",
                   background:
-                    difficulty === d ? "rgba(255,107,157,0.15)" : "transparent",
-                  border: `1px solid rgba(255,107,157,${difficulty === d ? 0.6 : 0.2})`,
-                  borderRadius: "3px",
-                  color: difficulty === d ? "#f8d4ef" : "rgba(200,180,255,0.4)",
+                    difficulty === d ? "rgba(255,107,157,0.12)" : "transparent",
+                  border: `1px solid rgba(255,107,157,${difficulty === d ? 0.5 : 0.15})`,
+                  borderRadius: "4px",
+                  color:
+                    difficulty === d ? "#f8d4ef" : "rgba(200,180,255,0.35)",
                   fontFamily: "Georgia, serif",
-                  fontSize: "0.85rem",
+                  fontSize: "0.88rem",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
                 }}
               >
-                {d === "easy"
-                  ? "fácil 3×3"
-                  : d === "medium"
-                    ? "medio 4×4"
-                    : "difícil 5×5"}
+                <span>{diffLabels[d]}</span>
+                <span style={{ fontSize: "0.75rem", opacity: 0.6 }}>
+                  {diffDesc[d]}
+                </span>
               </button>
             ))}
           </div>
@@ -327,7 +465,7 @@ export default function PuzzleGame() {
         </div>
       )}
 
-      {/* ── PLAYING ── */}
+      {/* PLAYING */}
       {screen === "playing" && (
         <div
           style={{
@@ -385,8 +523,8 @@ export default function PuzzleGame() {
             ref={boardRef}
             style={{
               position: "relative",
-              width: board,
-              height: board,
+              width: boardSize,
+              height: boardSize,
               border: "1px solid rgba(255,107,157,0.12)",
               borderRadius: "4px",
               overflow: "hidden",
@@ -402,11 +540,10 @@ export default function PuzzleGame() {
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                opacity: 0.07,
+                opacity: 0.06,
                 pointerEvents: "none",
               }}
             />
-
             {pieces.map((piece) => {
               if (piece.isEmpty)
                 return (
@@ -420,11 +557,10 @@ export default function PuzzleGame() {
                       height: CELL,
                       background: "rgba(0,0,0,0.65)",
                       border: "1px solid rgba(255,107,157,0.04)",
-                      transition: "left 0.12s ease, top 0.12s ease",
+                      transition: "left 0.1s ease, top 0.1s ease",
                     }}
                   />
                 );
-
               return (
                 <button
                   key={piece.id}
@@ -436,18 +572,18 @@ export default function PuzzleGame() {
                     width: CELL,
                     height: CELL,
                     padding: 0,
-                    border: "1px solid rgba(0,0,0,0.25)",
+                    border: "1px solid rgba(0,0,0,0.2)",
                     cursor: "pointer",
                     overflow: "hidden",
-                    transition: "left 0.12s ease, top 0.12s ease",
+                    transition: "left 0.1s ease, top 0.1s ease",
                     boxSizing: "border-box",
                   }}
                 >
                   <div
                     style={{
                       position: "absolute",
-                      width: board,
-                      height: board,
+                      width: boardSize,
+                      height: boardSize,
                       backgroundImage: `url(${image})`,
                       backgroundSize: "cover",
                       left: -piece.correctCol * CELL,
@@ -474,7 +610,7 @@ export default function PuzzleGame() {
         </div>
       )}
 
-      {/* ── COMPLETE ── */}
+      {/* COMPLETE */}
       {screen === "complete" && (
         <div
           style={{
@@ -502,7 +638,6 @@ export default function PuzzleGame() {
           >
             🧩
           </div>
-
           <div
             style={{
               width: "min(260px, 65vw)",
@@ -520,7 +655,6 @@ export default function PuzzleGame() {
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
-
           <p
             style={{
               fontFamily: "Georgia, serif",
@@ -543,7 +677,6 @@ export default function PuzzleGame() {
           >
             {moves} movimientos
           </p>
-
           <div
             style={{
               height: "1px",
@@ -553,7 +686,6 @@ export default function PuzzleGame() {
               marginBottom: "1.2rem",
             }}
           />
-
           <p
             style={{
               fontFamily: "Georgia, serif",
@@ -565,9 +697,8 @@ export default function PuzzleGame() {
               marginBottom: "2rem",
             }}
           >
-            {MESSAGES[image]}
+            {MESSAGES[image] || "Escribe aquí tu mensaje para esta foto ❤️‍🩹"}
           </p>
-
           <div
             style={{
               display: "flex",
