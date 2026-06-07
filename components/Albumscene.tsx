@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface Page {
@@ -135,31 +135,31 @@ const PAGES: Page[] = [
   },
 ];
 
+// Pages: 0 = cover, 1..N = content, N+1 = last blank
+const COVER = -1;
+const LAST = PAGES.length;
+
 export default function AlbumScene() {
   const router = useRouter();
-  const [current, setCurrent] = useState(0);
-  const [flipping, setFlipping] = useState(false);
-  const [flipDir, setFlipDir] = useState<"next" | "prev">("next");
+  const [page, setPage] = useState(COVER);
+  const [turning, setTurning] = useState(false);
+  const [turnDir, setTurnDir] = useState<"fwd" | "bwd">("fwd");
+  const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
-  const [introVisible, setIntroVisible] = useState(false);
+  const [introVis, setIntroVis] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [bookVisible, setBookVisible] = useState(false);
-
-  const totalPages = PAGES.length + 1; // +1 for last blank page
-  const isLastPage = current === totalPages - 1;
-  const page = current < PAGES.length ? PAGES[current] : null;
+  const [touchX, setTouchX] = useState<number | null>(null);
 
   useEffect(() => {
-    setTimeout(() => setIntroVisible(true), 60);
+    setTimeout(() => setIntroVis(true), 60);
   }, []);
 
   const closeIntro = () => {
-    setIntroVisible(false);
+    setIntroVis(false);
     setTimeout(() => {
       setShowIntro(false);
-      setTimeout(() => setBookVisible(true), 50);
+      setTimeout(() => setVisible(true), 60);
     }, 350);
   };
 
@@ -168,102 +168,133 @@ export default function AlbumScene() {
     setTimeout(() => router.push("/photos"), 500);
   };
 
-  const flipPage = (dir: "next" | "prev") => {
-    if (flipping) return;
-    if (dir === "next" && current >= totalPages - 1) return;
-    if (dir === "prev" && current <= 0) return;
-    setFlipDir(dir);
-    setFlipping(true);
+  const turnPage = (dir: "fwd" | "bwd") => {
+    if (turning) return;
+    if (dir === "fwd" && page >= LAST) return;
+    if (dir === "bwd" && page <= COVER) return;
+    setTurnDir(dir);
+    setTurning(true);
     setTimeout(() => {
-      setCurrent((c) => (dir === "next" ? c + 1 : c - 1));
-      setFlipping(false);
-    }, 500);
+      setPage((p) => (dir === "fwd" ? p + 1 : p - 1));
+      setTurning(false);
+    }, 600);
   };
 
-  const onTouchStart = (e: React.TouchEvent) =>
-    setTouchStart(e.touches[0].clientX);
+  const onTouchStart = (e: React.TouchEvent) => setTouchX(e.touches[0].clientX);
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
-    const diff = touchStart - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) flipPage(diff > 0 ? "next" : "prev");
-    setTouchStart(null);
+    if (touchX === null) return;
+    const d = touchX - e.changedTouches[0].clientX;
+    if (Math.abs(d) > 45) turnPage(d > 0 ? "fwd" : "bwd");
+    setTouchX(null);
   };
+
+  const isCover = page === COVER;
+  const isLast = page === LAST;
+  const pageData = !isCover && !isLast ? PAGES[page] : null;
+
+  // Paper color cycling — warm cream tones
+  const paperTones = [
+    "#fdf8f0",
+    "#fef9f2",
+    "#fdf7ee",
+    "#fefaf3",
+    "#fdf8f1",
+    "#fef8ef",
+    "#fdf9f2",
+    "#fefaf4",
+    "#fdf7ed",
+    "#fef9f1",
+  ];
+  const tone = isCover ? "#2a1a0e" : paperTones[page % paperTones.length];
 
   return (
     <>
-      {/* Inject CSS for 3D flip animation */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,300;1,400;1,300&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;1,300;1,400&family=IM+Fell+English:ital@0;1&display=swap');
 
-        .book-scene {
-          perspective: 1400px;
-          perspective-origin: 50% 45%;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .book-wrap {
+          perspective: 2000px;
         }
-        .book {
-          position: relative;
-          transform-style: preserve-3d;
-        }
-        .page-flip {
+
+        /* ── PAGE TURN ── */
+        .page-turner {
           position: absolute;
           inset: 0;
           transform-style: preserve-3d;
           transform-origin: left center;
-          transition: transform 0.55s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+          z-index: 20;
           pointer-events: none;
-          z-index: 10;
+          border-radius: 4px 12px 12px 4px;
         }
-        .page-flip.flipping-next {
-          animation: flipNext 0.55s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+        .turn-fwd {
+          animation: turnFwd 0.62s cubic-bezier(0.55,0,0.45,1) forwards;
         }
-        .page-flip.flipping-prev {
-          animation: flipPrev 0.55s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+        .turn-bwd {
+          animation: turnBwd 0.62s cubic-bezier(0.55,0,0.45,1) forwards;
         }
-        @keyframes flipNext {
-          0%   { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(0,0,0,0); }
-          30%  { box-shadow: -8px 0 20px rgba(0,0,0,0.4); }
-          100% { transform: rotateY(-180deg); box-shadow: 0 0 0 rgba(0,0,0,0); }
+        @keyframes turnFwd {
+          0%   { transform: rotateY(0deg);    }
+          40%  { box-shadow: -12px 0 30px rgba(0,0,0,0.45); }
+          100% { transform: rotateY(-180deg); box-shadow: none; }
         }
-        @keyframes flipPrev {
+        @keyframes turnBwd {
           0%   { transform: rotateY(-180deg); }
-          100% { transform: rotateY(0deg); }
+          40%  { box-shadow: 12px 0 30px rgba(0,0,0,0.45); }
+          100% { transform: rotateY(0deg);    box-shadow: none; }
         }
-        .page-front, .page-back {
-          position: absolute;
-          inset: 0;
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
-          border-radius: 3px 10px 10px 3px;
-          overflow: hidden;
-        }
-        .page-back {
-          transform: rotateY(180deg);
-          background: #f5f0e8;
-        }
-        .paper-texture {
-          background: linear-gradient(135deg, #1a0a30 0%, #0e0718 100%);
-          position: relative;
-        }
-        .paper-texture::before {
+
+        /* ── PAPER LINES ── */
+        .lined-paper::after {
           content: '';
           position: absolute;
-          inset: 0;
+          left: 0; right: 0; top: 0; bottom: 0;
           background: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 28px,
-            rgba(255,107,157,0.04) 28px,
-            rgba(255,107,157,0.04) 29px
+            transparent, transparent 31px,
+            rgba(180,160,120,0.18) 31px, rgba(180,160,120,0.18) 32px
           );
           pointer-events: none;
         }
-        .spine-gradient {
-          background: linear-gradient(to right, 
-            #1a0830 0%, #2a1245 15%, #1a0830 30%, #0e0718 50%
-          );
+
+        /* ── COVER TEXTURE ── */
+        .book-cover {
+          background:
+            radial-gradient(ellipse at 30% 20%, rgba(120,60,20,0.4) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 80%, rgba(80,30,10,0.3) 0%, transparent 50%),
+            linear-gradient(135deg, #3d1f0a 0%, #2a1206 40%, #1e0d04 70%, #2e1608 100%);
         }
-        .page-shadow-right {
-          background: linear-gradient(to right, rgba(0,0,0,0.25) 0%, transparent 100%);
-          position: absolute; left: 0; top: 0; bottom: 0; width: 30px; pointer-events: none;
+
+        /* ── SPINE ── */
+        .book-spine {
+          background: linear-gradient(to right,
+            #1a0905 0%, #3d1f0a 20%, #4a2510 45%,
+            #3d1f0a 70%, #1a0905 100%
+          );
+          box-shadow: inset -4px 0 8px rgba(0,0,0,0.5);
+        }
+
+        /* ── FOLD SHADOW on page ── */
+        .fold-shadow {
+          position: absolute;
+          left: 0; top: 0; bottom: 0; width: 22px;
+          background: linear-gradient(to right,
+            rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.06) 60%, transparent 100%
+          );
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        /* ── PAGE EDGES ── */
+        .page-edges {
+          position: absolute;
+          right: -5px; top: 2px; bottom: 2px; width: 6px;
+          background: repeating-linear-gradient(
+            to bottom,
+            #e8dcc8, #e8dcc8 1px,
+            #f0e8d8 1px, #f0e8d8 3px
+          );
+          border-radius: 0 2px 2px 0;
         }
       `}</style>
 
@@ -271,7 +302,7 @@ export default function AlbumScene() {
         style={{
           minHeight: "100vh",
           background:
-            "radial-gradient(ellipse at 50% 30%, #120820 0%, #040208 70%)",
+            "radial-gradient(ellipse at 50% 40%, #2a1505 0%, #0d0604 50%, #050303 100%)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -281,6 +312,7 @@ export default function AlbumScene() {
           transition: "opacity 0.5s ease",
         }}
       >
+        {/* Back */}
         <button
           onClick={goBack}
           style={{
@@ -288,14 +320,14 @@ export default function AlbumScene() {
             top: "1.2rem",
             left: "1.2rem",
             zIndex: 50,
-            background: "rgba(20,10,35,0.8)",
-            border: "1px solid rgba(192,132,252,0.2)",
+            background: "rgba(30,15,5,0.85)",
+            border: "1px solid rgba(180,140,80,0.25)",
             borderRadius: "2px",
-            color: "rgba(220,200,255,0.55)",
+            color: "rgba(220,190,140,0.6)",
             padding: "0.45rem 0.9rem",
-            fontFamily: "Georgia, serif",
+            fontFamily: "'Playfair Display', Georgia, serif",
             fontSize: "0.8rem",
-            letterSpacing: "0.15em",
+            letterSpacing: "0.12em",
             cursor: "pointer",
             backdropFilter: "blur(6px)",
           }}
@@ -303,19 +335,20 @@ export default function AlbumScene() {
           ← volver
         </button>
 
+        {/* Counter */}
         <div
           style={{
             position: "fixed",
             top: "1.2rem",
             right: "1.5rem",
             zIndex: 50,
-            fontFamily: "Georgia, serif",
-            fontSize: "0.75rem",
-            color: "rgba(200,180,255,0.35)",
-            letterSpacing: "0.1em",
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: "0.72rem",
+            color: "rgba(200,170,110,0.35)",
+            letterSpacing: "0.12em",
           }}
         >
-          {isLastPage ? "fin ♡" : `${current + 1} / ${PAGES.length}`}
+          {isCover ? "portada" : isLast ? "fin ♡" : `${page} / ${PAGES.length}`}
         </div>
 
         {/* Intro modal */}
@@ -325,72 +358,74 @@ export default function AlbumScene() {
               position: "fixed",
               inset: 0,
               zIndex: 100,
-              background: "rgba(4,2,8,0.95)",
+              background: "rgba(5,3,2,0.96)",
               backdropFilter: "blur(12px)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               padding: "1.5rem",
-              opacity: introVisible ? 1 : 0,
-              transition: "opacity 0.35s ease",
+              opacity: introVis ? 1 : 0,
+              transition: "opacity 0.4s ease",
             }}
           >
             <div
               style={{
-                background:
-                  "linear-gradient(135deg, rgba(22,10,42,0.99), rgba(12,6,24,0.99))",
-                border: "1px solid rgba(255,107,157,0.2)",
+                background: "linear-gradient(135deg, #2a1508, #1a0d05)",
+                border: "1px solid rgba(180,140,80,0.25)",
                 borderRadius: "8px",
-                padding: "2.2rem 2rem 1.8rem",
-                maxWidth: "360px",
+                padding: "2.2rem 2rem 2rem",
+                maxWidth: "340px",
                 width: "100%",
                 textAlign: "center",
-                transform: introVisible ? "scale(1)" : "scale(0.96)",
-                transition: "transform 0.35s ease",
-                boxShadow: "0 0 60px rgba(192,84,252,0.12)",
+                transform: introVis ? "scale(1)" : "scale(0.96)",
+                transition: "transform 0.4s ease",
+                boxShadow:
+                  "0 0 60px rgba(0,0,0,0.8), 0 0 30px rgba(180,120,40,0.08)",
               }}
             >
               <div style={{ fontSize: "2.2rem", marginBottom: "1rem" }}>📖</div>
               <h2
                 style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: "1.4rem",
+                  fontFamily:
+                    "'IM Fell English', 'Playfair Display', Georgia, serif",
+                  fontSize: "1.5rem",
                   fontWeight: 400,
-                  color: "#f8d4ef",
+                  color: "#e8d5a0",
                   marginBottom: "1rem",
+                  letterSpacing: "0.04em",
                 }}
               >
-                Nuestro álbum
+                Nuestro Álbum
               </h2>
               <div
                 style={{
                   height: "1px",
                   background:
-                    "linear-gradient(to right, transparent, rgba(255,107,157,0.3), transparent)",
+                    "linear-gradient(to right, transparent, rgba(180,140,80,0.4), transparent)",
                   marginBottom: "1.1rem",
                 }}
               />
               <p
                 style={{
                   fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: "0.95rem",
-                  color: "rgba(220,200,255,0.75)",
-                  lineHeight: 1.8,
+                  fontSize: "0.92rem",
+                  color: "rgba(220,195,145,0.7)",
+                  lineHeight: 1.85,
                   fontStyle: "italic",
                   marginBottom: "1.6rem",
                 }}
               >
-                El orden de estas fotos no sigue nuestra historia. Son
-                simplemente momentos importantes que quiero que recuerdes. Cada
-                uno tiene un pedazo de lo nuestro. 💕
+                El orden de estas fotos no sigue nuestra historia — son
+                simplemente los momentos que guardo con más cariño. Cada página
+                tiene un pedazo de lo que somos. 💕
               </p>
               <p
                 style={{
                   fontFamily: "Georgia, serif",
-                  fontSize: "0.75rem",
-                  color: "rgba(200,180,255,0.35)",
-                  marginBottom: "1.4rem",
-                  letterSpacing: "0.05em",
+                  fontSize: "0.72rem",
+                  color: "rgba(200,170,100,0.3)",
+                  marginBottom: "1.5rem",
+                  letterSpacing: "0.08em",
                 }}
               >
                 desliza o usa las flechas para pasar las páginas
@@ -401,13 +436,13 @@ export default function AlbumScene() {
                   width: "100%",
                   padding: "0.85rem",
                   background:
-                    "linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.1))",
-                  border: "1px solid rgba(255,107,157,0.35)",
+                    "linear-gradient(135deg, rgba(180,120,40,0.2), rgba(140,80,20,0.15))",
+                  border: "1px solid rgba(180,140,80,0.35)",
                   borderRadius: "3px",
-                  color: "#f8d4ef",
+                  color: "#e8d5a0",
                   fontFamily: "'Playfair Display', Georgia, serif",
                   fontSize: "1rem",
-                  letterSpacing: "0.05em",
+                  letterSpacing: "0.08em",
                   cursor: "pointer",
                 }}
               >
@@ -417,363 +452,507 @@ export default function AlbumScene() {
           </div>
         )}
 
-        {/* Book */}
+        {/* ── BOOK ── */}
         <div
-          className="book-scene"
+          className="book-wrap"
           style={{
             width: "100%",
-            maxWidth: "420px",
-            opacity: bookVisible ? 1 : 0,
-            transform: bookVisible ? "translateY(0)" : "translateY(24px)",
-            transition: "opacity 0.8s ease, transform 0.8s ease",
+            maxWidth: "400px",
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(24px)",
+            transition: "opacity 0.9s ease, transform 0.9s ease",
           }}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          <div className="book" style={{ width: "100%" }}>
-            {/* Book body */}
+          <div style={{ position: "relative" }}>
+            {/* Page stack (right edge illusion) */}
+            <div className="page-edges" />
+            {[4, 3, 2, 1].map((i) => (
+              <div
+                key={i}
+                style={{
+                  position: "absolute",
+                  right: -i * 1.2,
+                  top: i * 0.4,
+                  bottom: i * 0.4,
+                  width: "100%",
+                  background: paperTones[(page + i) % paperTones.length],
+                  borderRadius: "4px 12px 12px 4px",
+                  boxShadow: "1px 1px 2px rgba(0,0,0,0.2)",
+                  zIndex: 0,
+                }}
+              />
+            ))}
+
+            {/* ── CURRENT PAGE ── */}
             <div
               style={{
                 position: "relative",
-                width: "100%",
-                borderRadius: "4px 10px 10px 4px",
+                zIndex: 5,
+                background: isCover ? undefined : tone,
+                borderRadius: "4px 12px 12px 4px",
+                overflow: "hidden",
                 boxShadow:
-                  "6px 10px 50px rgba(0,0,0,0.7), -2px 0 0 rgba(0,0,0,0.3), 0 0 40px rgba(192,84,252,0.07)",
+                  "4px 6px 30px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)",
               }}
             >
               {/* Spine */}
               <div
-                className="spine-gradient"
+                className="book-spine"
                 style={{
                   position: "absolute",
                   left: 0,
                   top: 0,
                   bottom: 0,
                   width: "18px",
+                  zIndex: 10,
                   borderRadius: "4px 0 0 4px",
-                  zIndex: 2,
-                  boxShadow: "inset -3px 0 6px rgba(0,0,0,0.4)",
                 }}
               />
 
-              {/* Page stack edges (right side) */}
-              {[6, 5, 4, 3, 2, 1].map((i) => (
-                <div
-                  key={i}
-                  style={{
-                    position: "absolute",
-                    right: -i * 1.5,
-                    top: i * 0.5,
-                    bottom: i * 0.5,
-                    width: "100%",
-                    background:
-                      i % 2 === 0
-                        ? "rgba(220,200,240,0.06)"
-                        : "rgba(200,180,220,0.04)",
-                    borderRadius: "4px 10px 10px 4px",
-                    zIndex: 0,
-                  }}
-                />
-              ))}
+              {/* Fold shadow */}
+              <div className="fold-shadow" style={{ left: "18px" }} />
 
-              {/* Current page */}
-              <div
-                className="paper-texture"
-                style={{
-                  position: "relative",
-                  zIndex: 1,
-                  borderRadius: "4px 10px 10px 4px",
-                  overflow: "hidden",
-                  minHeight: isLastPage ? "420px" : undefined,
-                }}
-              >
-                <div className="page-shadow-right" />
-
-                {/* Page number */}
+              {/* Page number */}
+              {!isCover && !isLast && (
                 <div
                   style={{
                     position: "absolute",
-                    top: "0.7rem",
+                    bottom: "0.5rem",
                     right: "1rem",
-                    zIndex: 3,
-                    fontFamily: "Georgia, serif",
+                    zIndex: 10,
+                    fontFamily: "'Playfair Display', Georgia, serif",
                     fontSize: "0.6rem",
-                    color: "rgba(255,180,210,0.2)",
+                    color: "rgba(120,90,50,0.4)",
                     letterSpacing: "0.1em",
                   }}
                 >
-                  {isLastPage ? "" : current + 1}
+                  {page}
                 </div>
+              )}
 
-                {isLastPage ? (
-                  /* Last blank page */
+              {/* ── COVER ── */}
+              {isCover && (
+                <div
+                  className="book-cover"
+                  style={{
+                    minHeight: "480px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "3rem 2rem",
+                    textAlign: "center",
+                    position: "relative",
+                  }}
+                >
+                  {/* Decorative border */}
                   <div
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minHeight: "460px",
-                      padding: "3rem 2.5rem",
-                      textAlign: "center",
+                      position: "absolute",
+                      inset: "12px",
+                      border: "1px solid rgba(180,140,60,0.2)",
+                      borderRadius: "8px",
+                      pointerEvents: "none",
                     }}
-                  >
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: "18px",
+                      border: "1px solid rgba(180,140,60,0.1)",
+                      borderRadius: "6px",
+                      pointerEvents: "none",
+                    }}
+                  />
+
+                  {/* Corner ornaments */}
+                  {["0,0", "0,auto", "auto,0", "auto,auto"].map((pos, i) => (
                     <div
+                      key={i}
                       style={{
-                        fontSize: "0.7rem",
-                        color: "rgba(255,107,157,0.15)",
-                        letterSpacing: "0.3em",
-                        marginBottom: "3rem",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      ✦ ✦ ✦
-                    </div>
-                    <p
-                      style={{
-                        fontFamily: "'Playfair Display', Georgia, serif",
-                        fontSize: "clamp(1.3rem, 4vw, 1.7rem)",
-                        fontWeight: 300,
-                        fontStyle: "italic",
-                        color: "rgba(240,220,255,0.55)",
-                        lineHeight: 1.9,
-                        letterSpacing: "0.04em",
-                        maxWidth: "260px",
-                      }}
-                    >
-                      Continuará…
-                    </p>
-                    <div
-                      style={{
-                        width: "60px",
-                        height: "1px",
-                        background: "rgba(255,107,157,0.18)",
-                        margin: "2rem auto",
+                        position: "absolute",
+                        top: i < 2 ? "14px" : "auto",
+                        bottom: i >= 2 ? "14px" : "auto",
+                        left: i % 2 === 0 ? "14px" : "auto",
+                        right: i % 2 === 1 ? "14px" : "auto",
+                        width: "20px",
+                        height: "20px",
+                        borderTop:
+                          i < 2 ? "1px solid rgba(180,140,60,0.35)" : "none",
+                        borderBottom:
+                          i >= 2 ? "1px solid rgba(180,140,60,0.35)" : "none",
+                        borderLeft:
+                          i % 2 === 0
+                            ? "1px solid rgba(180,140,60,0.35)"
+                            : "none",
+                        borderRight:
+                          i % 2 === 1
+                            ? "1px solid rgba(180,140,60,0.35)"
+                            : "none",
                       }}
                     />
-                    <p
-                      style={{
-                        fontFamily: "'Playfair Display', Georgia, serif",
-                        fontSize: "0.9rem",
-                        fontStyle: "italic",
-                        color: "rgba(255,107,157,0.28)",
-                        letterSpacing: "0.06em",
-                        lineHeight: 1.8,
-                        maxWidth: "240px",
-                      }}
-                    >
-                      seguiremos llenando estas páginas juntos
-                    </p>
-                    <div
-                      style={{
-                        marginTop: "2.5rem",
-                        fontSize: "1.4rem",
-                        opacity: 0.2,
-                      }}
-                    >
-                      ♡
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.7rem",
-                        color: "rgba(255,107,157,0.12)",
-                        letterSpacing: "0.3em",
-                        marginTop: "3rem",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      ✦ ✦ ✦
-                    </div>
+                  ))}
+
+                  <div
+                    style={{
+                      fontSize: "1.8rem",
+                      marginBottom: "1.8rem",
+                      filter: "drop-shadow(0 0 12px rgba(200,160,60,0.4))",
+                    }}
+                  >
+                    ♡
                   </div>
-                ) : (
-                  page && (
-                    <>
-                      {/* Photo */}
-                      <div
-                        onClick={() => !page.isVideo && setFullscreen(true)}
-                        style={{
-                          width: "100%",
-                          aspectRatio: "4/3",
-                          overflow: "hidden",
-                          position: "relative",
-                          cursor: page.isVideo ? "default" : "zoom-in",
-                        }}
-                      >
-                        {page.isVideo ? (
-                          <video
-                            src={page.image}
-                            controls
-                            playsInline
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
-                            }}
-                          />
-                        ) : (
-                          <img
-                            src={page.image}
-                            alt={`página ${current + 1}`}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
-                            }}
-                          />
-                        )}
-                        {/* Photo vignette */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            background:
-                              "linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, transparent 40%, transparent 55%, rgba(14,7,26,0.7) 100%)",
-                            pointerEvents: "none",
-                          }}
-                        />
-                        {/* Date */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            bottom: "0.8rem",
-                            left: "1.2rem",
-                            fontFamily: "Georgia, serif",
-                            fontSize: "0.68rem",
-                            color: "rgba(255,200,220,0.6)",
-                            letterSpacing: "0.1em",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          {page.date}
-                        </div>
-                        {!page.isVideo && (
-                          <div
-                            style={{
-                              position: "absolute",
-                              bottom: "0.7rem",
-                              right: "0.9rem",
-                              fontSize: "0.65rem",
-                              color: "rgba(255,180,210,0.25)",
-                              pointerEvents: "none",
-                            }}
-                          >
-                            🔍
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Text area — looks like lined paper */}
-                      <div
-                        style={{
-                          padding: "1.3rem 1.6rem 1.8rem",
-                          position: "relative",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            marginBottom: "0.9rem",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "20px",
-                              height: "1px",
-                              background: "rgba(255,107,157,0.25)",
-                            }}
-                          />
-                          <span
-                            style={{
-                              fontSize: "0.45rem",
-                              color: "rgba(255,107,157,0.3)",
-                            }}
-                          >
-                            ✦
-                          </span>
-                          <div
-                            style={{
-                              flex: 1,
-                              height: "1px",
-                              background: "rgba(255,107,157,0.1)",
-                            }}
-                          />
-                        </div>
-                        <p
-                          style={{
-                            fontFamily: "'Playfair Display', Georgia, serif",
-                            fontSize: "clamp(0.88rem, 2.4vw, 1rem)",
-                            color: "rgba(220,200,255,0.82)",
-                            lineHeight: 1.85,
-                            fontStyle: "italic",
-                            margin: 0,
-                          }}
-                        >
-                          {page.message}
-                        </p>
-                        {/* Bottom corner decoration */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            bottom: "0.6rem",
-                            right: "1rem",
-                            fontFamily: "Georgia, serif",
-                            fontSize: "0.55rem",
-                            color: "rgba(255,107,157,0.15)",
-                            letterSpacing: "0.2em",
-                          }}
-                        >
-                          ♡
-                        </div>
-                      </div>
-                    </>
-                  )
-                )}
-              </div>
+                  <h1
+                    style={{
+                      fontFamily:
+                        "'IM Fell English', 'Playfair Display', Georgia, serif",
+                      fontSize: "clamp(1.6rem, 5vw, 2.2rem)",
+                      fontWeight: 400,
+                      color: "#e8d5a0",
+                      letterSpacing: "0.06em",
+                      lineHeight: 1.35,
+                      marginBottom: "1rem",
+                      textShadow: "0 0 30px rgba(200,160,60,0.3)",
+                    }}
+                  >
+                    Nuestro Álbum
+                  </h1>
 
-              {/* Flip animation overlay */}
-              {flipping && (
+                  <div
+                    style={{
+                      width: "80px",
+                      height: "1px",
+                      background:
+                        "linear-gradient(to right, transparent, rgba(180,140,60,0.5), transparent)",
+                      marginBottom: "1rem",
+                    }}
+                  />
+
+                  <p
+                    style={{
+                      fontFamily: "'Playfair Display', Georgia, serif",
+                      fontSize: "0.9rem",
+                      fontStyle: "italic",
+                      color: "rgba(200,170,110,0.55)",
+                      lineHeight: 1.8,
+                      letterSpacing: "0.04em",
+                      maxWidth: "240px",
+                    }}
+                  >
+                    "Porque cada momento contigo merece ser guardado para
+                    siempre."
+                  </p>
+
+                  <div
+                    style={{
+                      width: "60px",
+                      height: "1px",
+                      background:
+                        "linear-gradient(to right, transparent, rgba(180,140,60,0.3), transparent)",
+                      margin: "1.5rem 0",
+                    }}
+                  />
+
+                  <p
+                    style={{
+                      fontFamily: "'Playfair Display', Georgia, serif",
+                      fontSize: "0.7rem",
+                      color: "rgba(180,140,80,0.3)",
+                      letterSpacing: "0.2em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    toca → para abrir
+                  </p>
+                </div>
+              )}
+
+              {/* ── LAST PAGE ── */}
+              {isLast && (
                 <div
-                  className={`page-flip ${flipping ? `flipping-${flipDir}` : ""}`}
+                  className="lined-paper"
                   style={{
-                    borderRadius: "4px 10px 10px 4px",
-                    background:
-                      flipDir === "next"
-                        ? "linear-gradient(135deg, rgba(22,10,42,0.98), rgba(12,6,24,0.98))"
-                        : "linear-gradient(135deg, rgba(18,8,35,0.98), rgba(10,5,20,0.98))",
-                    boxShadow:
-                      "inset -4px 0 12px rgba(0,0,0,0.3), 4px 0 20px rgba(0,0,0,0.5)",
+                    minHeight: "460px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "3rem 2.5rem",
+                    textAlign: "center",
+                    background: "#fdf7ec",
+                    position: "relative",
                   }}
                 >
                   <div
-                    className="page-front"
                     style={{
-                      background:
-                        "linear-gradient(135deg, rgba(22,10,42,0.98), rgba(12,6,24,0.98))",
+                      position: "absolute",
+                      inset: "16px",
+                      border: "1px solid rgba(160,120,60,0.12)",
+                      borderRadius: "4px",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <div
+                    style={{
+                      fontSize: "0.65rem",
+                      color: "rgba(160,120,60,0.2)",
+                      letterSpacing: "0.4em",
+                      marginBottom: "2.5rem",
                     }}
                   >
-                    {/* Shows current page content while flipping */}
-                    <div
-                      style={{ width: "100%", height: "100%", opacity: 0.5 }}
-                    />
+                    ✦ ✦ ✦
+                  </div>
+                  <p
+                    style={{
+                      fontFamily:
+                        "'IM Fell English', 'Playfair Display', Georgia, serif",
+                      fontSize: "clamp(1.3rem, 4vw, 1.8rem)",
+                      fontWeight: 400,
+                      fontStyle: "italic",
+                      color: "rgba(100,70,30,0.55)",
+                      lineHeight: 1.9,
+                      letterSpacing: "0.03em",
+                      maxWidth: "250px",
+                    }}
+                  >
+                    Continuará…
+                  </p>
+                  <div
+                    style={{
+                      width: "50px",
+                      height: "1px",
+                      background: "rgba(160,120,60,0.2)",
+                      margin: "2rem auto",
+                    }}
+                  />
+                  <p
+                    style={{
+                      fontFamily: "'Playfair Display', Georgia, serif",
+                      fontSize: "0.88rem",
+                      fontStyle: "italic",
+                      color: "rgba(120,85,40,0.38)",
+                      letterSpacing: "0.04em",
+                      lineHeight: 1.85,
+                      maxWidth: "230px",
+                    }}
+                  >
+                    seguiremos llenando estas páginas juntos, un momento a la
+                    vez.
+                  </p>
+                  <div
+                    style={{
+                      marginTop: "2.5rem",
+                      fontSize: "1.3rem",
+                      color: "rgba(160,100,50,0.25)",
+                    }}
+                  >
+                    ♡
                   </div>
                   <div
-                    className="page-back"
                     style={{
-                      background:
-                        "linear-gradient(135deg, rgba(18,8,35,0.95), rgba(10,5,20,0.95))",
+                      fontSize: "0.65rem",
+                      color: "rgba(160,120,60,0.15)",
+                      letterSpacing: "0.4em",
+                      marginTop: "2.5rem",
                     }}
                   >
+                    ✦ ✦ ✦
+                  </div>
+                </div>
+              )}
+
+              {/* ── CONTENT PAGE ── */}
+              {pageData && (
+                <div
+                  className="lined-paper"
+                  style={{ position: "relative", background: tone }}
+                >
+                  {/* Photo */}
+                  <div
+                    onClick={() => !pageData.isVideo && setFullscreen(true)}
+                    style={{
+                      aspectRatio: "4/3",
+                      overflow: "hidden",
+                      position: "relative",
+                      cursor: pageData.isVideo ? "default" : "zoom-in",
+                      marginLeft: "18px",
+                      width: "calc(100% - 18px)",
+                    }}
+                  >
+                    {pageData.isVideo ? (
+                      <video
+                        src={pageData.image}
+                        controls
+                        playsInline
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={pageData.image}
+                        alt={`página ${page}`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                          filter: "sepia(0.08) contrast(1.02)",
+                        }}
+                      />
+                    )}
+                    {/* Vignette */}
                     <div
-                      style={{ width: "100%", height: "100%", opacity: 0.3 }}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                          "linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, transparent 35%, transparent 60%, rgba(0,0,0,0.18) 100%)",
+                        pointerEvents: "none",
+                      }}
                     />
+                    {/* Photo border */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: "6px",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        pointerEvents: "none",
+                      }}
+                    />
+                    {!pageData.isVideo && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "0.5rem",
+                          right: "0.6rem",
+                          fontSize: "0.6rem",
+                          color: "rgba(255,255,255,0.3)",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        🔍
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Caption area */}
+                  <div
+                    style={{
+                      padding: "1rem 1.4rem 1.6rem 2rem",
+                      position: "relative",
+                    }}
+                  >
+                    {/* Date */}
+                    <p
+                      style={{
+                        fontFamily: "'Playfair Display', Georgia, serif",
+                        fontSize: "0.68rem",
+                        color: "rgba(120,85,40,0.5)",
+                        letterSpacing: "0.12em",
+                        marginBottom: "0.5rem",
+                        fontStyle: "italic",
+                      }}
+                    >
+                      {pageData.date}
+                    </p>
+
+                    {/* Divider */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        marginBottom: "0.7rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "14px",
+                          height: "1px",
+                          background: "rgba(140,100,50,0.25)",
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: "0.4rem",
+                          color: "rgba(140,100,50,0.3)",
+                        }}
+                      >
+                        ✦
+                      </span>
+                      <div
+                        style={{
+                          flex: 1,
+                          height: "1px",
+                          background: "rgba(140,100,50,0.12)",
+                        }}
+                      />
+                    </div>
+
+                    {/* Message */}
+                    <p
+                      style={{
+                        fontFamily: "'Playfair Display', Georgia, serif",
+                        fontSize: "clamp(0.86rem, 2.3vw, 0.96rem)",
+                        color: "rgba(80,50,20,0.78)",
+                        lineHeight: 1.9,
+                        fontStyle: "italic",
+                        margin: 0,
+                      }}
+                    >
+                      {pageData.message}
+                    </p>
                   </div>
                 </div>
               )}
             </div>
+
+            {/* ── FLIP ANIMATION OVERLAY ── */}
+            {turning && (
+              <div
+                className={`page-turner turn-${turnDir}`}
+                style={{
+                  background:
+                    turnDir === "fwd"
+                      ? tone
+                      : page - 1 >= 0 && page - 1 < PAGES.length
+                        ? paperTones[(page - 1) % paperTones.length]
+                        : "#2a1206",
+                  boxShadow: "inset -3px 0 10px rgba(0,0,0,0.2)",
+                }}
+              >
+                {/* The turning page shows a subtle ruled texture */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "repeating-linear-gradient(transparent, transparent 31px, rgba(180,150,100,0.1) 31px, rgba(180,150,100,0.1) 32px)",
+                    borderRadius: "4px 12px 12px 4px",
+                  }}
+                />
+                {/* Shadow on the fold */}
+                <div
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: "40%",
+                    background:
+                      "linear-gradient(to left, rgba(0,0,0,0.15), transparent)",
+                    borderRadius: "0 12px 12px 0",
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -782,107 +961,102 @@ export default function AlbumScene() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "1.5rem",
-              marginTop: "1.6rem",
+              gap: "1.4rem",
+              marginTop: "1.5rem",
             }}
           >
             <button
-              onClick={() => flipPage("prev")}
-              disabled={current === 0 || flipping}
+              onClick={() => turnPage("bwd")}
+              disabled={page <= COVER || turning}
               style={{
-                width: "46px",
-                height: "46px",
+                width: "44px",
+                height: "44px",
                 borderRadius: "50%",
                 background:
-                  current === 0
-                    ? "rgba(255,107,157,0.03)"
-                    : "rgba(255,107,157,0.1)",
-                border: `1px solid rgba(255,107,157,${current === 0 ? 0.08 : 0.28})`,
+                  page <= COVER
+                    ? "rgba(180,140,60,0.03)"
+                    : "rgba(180,140,60,0.1)",
+                border: `1px solid rgba(180,140,60,${page <= COVER ? 0.08 : 0.25})`,
                 color:
-                  current === 0
-                    ? "rgba(255,107,157,0.15)"
-                    : "rgba(255,150,190,0.8)",
-                fontSize: "1.1rem",
-                cursor: current === 0 ? "not-allowed" : "pointer",
+                  page <= COVER
+                    ? "rgba(180,140,60,0.15)"
+                    : "rgba(200,160,80,0.7)",
+                fontSize: "1rem",
+                cursor: page <= COVER ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 transition: "all 0.2s ease",
-                boxShadow:
-                  current === 0 ? "none" : "0 0 12px rgba(255,107,157,0.1)",
               }}
             >
               ←
             </button>
 
-            {/* Page dots */}
+            {/* Dots */}
             <div
               style={{
                 display: "flex",
                 gap: "4px",
                 alignItems: "center",
-                maxWidth: "180px",
+                maxWidth: "160px",
                 overflow: "hidden",
               }}
             >
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    if (flipping || i === current) return;
-                    setFlipDir(i > current ? "next" : "prev");
-                    setFlipping(true);
-                    setTimeout(() => {
-                      setCurrent(i);
-                      setFlipping(false);
-                    }, 500);
-                  }}
-                  style={{
-                    flexShrink: 0,
-                    width: i === current ? "16px" : "5px",
-                    height: "5px",
-                    borderRadius: "3px",
-                    background:
-                      i === current
-                        ? "linear-gradient(to right, #ff6b9d, #c084fc)"
-                        : i === totalPages - 1
-                          ? "rgba(255,107,157,0.1)"
-                          : "rgba(255,107,157,0.2)",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
-                    transition: "all 0.3s ease",
-                  }}
-                />
-              ))}
+              {Array.from({ length: PAGES.length + 2 }).map((_, i) => {
+                const idx = i - 1; // -1=cover, 0..N-1=pages, N=last
+                const active = idx === page;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      if (turning || idx === page) return;
+                      setTurnDir(idx > page ? "fwd" : "bwd");
+                      setTurning(true);
+                      setTimeout(() => {
+                        setPage(idx);
+                        setTurning(false);
+                      }, 600);
+                    }}
+                    style={{
+                      flexShrink: 0,
+                      width: active ? "16px" : "5px",
+                      height: "5px",
+                      borderRadius: "3px",
+                      background: active
+                        ? "linear-gradient(to right, #c8960a, #e8b830)"
+                        : "rgba(180,140,60,0.18)",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                      transition: "all 0.3s ease",
+                    }}
+                  />
+                );
+              })}
             </div>
 
             <button
-              onClick={() => flipPage("next")}
-              disabled={current === totalPages - 1 || flipping}
+              onClick={() => turnPage("fwd")}
+              disabled={page >= LAST || turning}
               style={{
-                width: "46px",
-                height: "46px",
+                width: "44px",
+                height: "44px",
                 borderRadius: "50%",
                 background:
-                  current === totalPages - 1
-                    ? "rgba(255,107,157,0.03)"
-                    : "rgba(255,107,157,0.1)",
-                border: `1px solid rgba(255,107,157,${current === totalPages - 1 ? 0.08 : 0.28})`,
+                  page >= LAST
+                    ? "rgba(180,140,60,0.03)"
+                    : "rgba(180,140,60,0.1)",
+                border: `1px solid rgba(180,140,60,${page >= LAST ? 0.08 : 0.25})`,
                 color:
-                  current === totalPages - 1
-                    ? "rgba(255,107,157,0.15)"
-                    : "rgba(255,150,190,0.8)",
-                fontSize: "1.1rem",
-                cursor: current === totalPages - 1 ? "not-allowed" : "pointer",
+                  page >= LAST
+                    ? "rgba(180,140,60,0.15)"
+                    : "rgba(200,160,80,0.7)",
+                fontSize: "1rem",
+                cursor: page >= LAST ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 transition: "all 0.2s ease",
-                boxShadow:
-                  current === totalPages - 1
-                    ? "none"
-                    : "0 0 12px rgba(255,107,157,0.1)",
               }}
             >
               →
@@ -892,11 +1066,11 @@ export default function AlbumScene() {
           <p
             style={{
               textAlign: "center",
-              fontFamily: "Georgia, serif",
-              fontSize: "0.62rem",
-              color: "rgba(200,180,255,0.12)",
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: "0.6rem",
+              color: "rgba(180,140,60,0.15)",
               marginTop: "0.8rem",
-              letterSpacing: "0.15em",
+              letterSpacing: "0.18em",
               textTransform: "uppercase",
             }}
           >
@@ -905,14 +1079,14 @@ export default function AlbumScene() {
         </div>
 
         {/* Fullscreen */}
-        {fullscreen && page && !page.isVideo && (
+        {fullscreen && pageData && !pageData.isVideo && (
           <div
             onClick={() => setFullscreen(false)}
             style={{
               position: "fixed",
               inset: 0,
               zIndex: 200,
-              background: "rgba(2,1,6,0.97)",
+              background: "rgba(2,1,0,0.97)",
               backdropFilter: "blur(8px)",
               display: "flex",
               alignItems: "center",
@@ -922,14 +1096,14 @@ export default function AlbumScene() {
             }}
           >
             <img
-              src={page.image}
+              src={pageData.image}
               alt="foto completa"
               style={{
                 maxWidth: "100%",
                 maxHeight: "100%",
                 objectFit: "contain",
                 borderRadius: "4px",
-                boxShadow: "0 0 60px rgba(0,0,0,0.8)",
+                boxShadow: "0 0 60px rgba(0,0,0,0.9)",
               }}
             />
             <button
@@ -938,12 +1112,12 @@ export default function AlbumScene() {
                 position: "fixed",
                 top: "1.2rem",
                 right: "1.2rem",
-                background: "rgba(20,10,35,0.8)",
-                border: "1px solid rgba(192,132,252,0.2)",
+                background: "rgba(30,15,5,0.9)",
+                border: "1px solid rgba(180,140,60,0.2)",
                 borderRadius: "50%",
                 width: "36px",
                 height: "36px",
-                color: "rgba(220,200,255,0.6)",
+                color: "rgba(200,170,100,0.7)",
                 fontSize: "0.9rem",
                 cursor: "pointer",
                 display: "flex",

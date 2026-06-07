@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 type Difficulty = "easy" | "medium" | "hard";
@@ -9,9 +9,13 @@ interface Piece {
   id: number;
   correctCol: number;
   correctRow: number;
-  currentCol: number;
-  currentRow: number;
-  isEmpty: boolean;
+  // Current pixel position
+  x: number;
+  y: number;
+  // Is it placed correctly
+  placed: boolean;
+  // Is it being dragged
+  dragging: boolean;
 }
 
 const GRIDS: Record<Difficulty, number> = { easy: 3, medium: 4, hard: 5 };
@@ -28,152 +32,200 @@ const MESSAGES: Record<string, string> = {
   "/photos/puzzle/puzzle-3.jpeg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
 };
 
-// Generates a SOLVABLE shuffle using valid slide moves
-function makePieces(grid: number): Piece[] {
-  const total = grid * grid;
-  // Start solved
-  let positions = Array.from({ length: total }, (_, i) => i);
-  let emptyIdx = total - 1;
-
-  // Do many random valid moves
-  const moves = grid === 3 ? 80 : grid === 4 ? 150 : 220;
-  for (let m = 0; m < moves; m++) {
-    const emptyRow = Math.floor(emptyIdx / grid);
-    const emptyCol = emptyIdx % grid;
-    const candidates: number[] = [];
-    if (emptyRow > 0) candidates.push((emptyRow - 1) * grid + emptyCol);
-    if (emptyRow < grid - 1) candidates.push((emptyRow + 1) * grid + emptyCol);
-    if (emptyCol > 0) candidates.push(emptyRow * grid + (emptyCol - 1));
-    if (emptyCol < grid - 1) candidates.push(emptyRow * grid + (emptyCol + 1));
-    const pick = candidates[Math.floor(Math.random() * candidates.length)];
-    [positions[emptyIdx], positions[pick]] = [
-      positions[pick],
-      positions[emptyIdx],
-    ];
-    emptyIdx = pick;
-  }
-
-  return positions.map((correctPos, currentPos) => ({
-    id: correctPos,
-    correctCol: correctPos % grid,
-    correctRow: Math.floor(correctPos / grid),
-    currentCol: currentPos % grid,
-    currentRow: Math.floor(currentPos / grid),
-    isEmpty: correctPos === total - 1,
-  }));
-}
-
-function isSolved(pieces: Piece[]) {
-  return pieces.every(
-    (p) => p.currentCol === p.correctCol && p.currentRow === p.correctRow,
-  );
-}
+const DIFF_CONFIG = {
+  easy: {
+    label: "fácil",
+    grid: "3×3",
+    desc: "Para entrar en calor 🌸",
+    color: "192,132,252",
+  },
+  medium: {
+    label: "medio",
+    grid: "4×4",
+    desc: "Un poco más difícil 🔥",
+    color: "255,107,157",
+  },
+  hard: {
+    label: "difícil",
+    grid: "5×5",
+    desc: "¡Tú puedes! 👑",
+    color: "255,180,60",
+  },
+};
 
 export default function PuzzleGame() {
   const router = useRouter();
   const [screen, setScreen] = useState<"select" | "playing" | "complete">(
     "select",
   );
-  const [showInstructions, setShowInstructions] = useState(true);
-  const [instrVisible, setInstrVisible] = useState(false);
+  const [showInstr, setShowInstr] = useState(true);
+  const [instrVis, setInstrVis] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [image, setImage] = useState(IMAGES[0].src);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [moves, setMoves] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
-  const [boardSize, setBoardSize] = useState(300);
-  const [lastMoved, setLastMoved] = useState<number | null>(null);
+  const [placedCount, setPlacedCount] = useState(0);
+
   const boardRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    id: number;
+    startX: number;
+    startY: number;
+    pieceX: number;
+    pieceY: number;
+  } | null>(null);
+  const piecesRef = useRef<Piece[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  piecesRef.current = pieces;
 
   useEffect(() => {
-    setTimeout(() => setInstrVisible(true), 60);
+    setTimeout(() => setInstrVis(true), 60);
   }, []);
-
-  useEffect(() => {
-    const calc = () => {
-      const W = Math.min(window.innerWidth - 32, 460);
-      const H = window.innerHeight * 0.6;
-      const g = GRIDS[difficulty];
-      const cell = Math.min(Math.floor(W / g), Math.floor(H / g));
-      setBoardSize(cell * g);
-    };
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, [difficulty]);
 
   const goBack = () => {
     setLeaving(true);
     setTimeout(() => router.push("/photos"), 500);
   };
 
-  const start = useCallback((img: string, diff: Difficulty) => {
+  const CELL_SIZE = useCallback(() => {
+    const W = Math.min(
+      (containerRef.current?.offsetWidth ?? window.innerWidth) - 32,
+      420,
+    );
+    const H = window.innerHeight * 0.55;
+    const g = GRIDS[difficulty];
+    return Math.min(Math.floor(W / g), Math.floor(H / g));
+  }, [difficulty]);
+
+  const startGame = useCallback((img: string, diff: Difficulty) => {
+    const g = GRIDS[diff];
+    const cell = (() => {
+      const W = Math.min(window.innerWidth - 32, 420);
+      const H = window.innerHeight * 0.55;
+      return Math.min(Math.floor(W / g), Math.floor(H / g));
+    })();
+    const board = cell * g;
+
+    // Scatter pieces randomly around the board area
+    const newPieces: Piece[] = [];
+    for (let r = 0; r < g; r++) {
+      for (let c = 0; c < g; c++) {
+        // Random scatter position — nearby but shuffled
+        const scatterX = Math.random() * (board - cell);
+        const scatterY = Math.random() * (board - cell);
+        newPieces.push({
+          id: r * g + c,
+          correctCol: c,
+          correctRow: r,
+          x: scatterX,
+          y: scatterY,
+          placed: false,
+          dragging: false,
+        });
+      }
+    }
+    // Shuffle order so they appear at different z-indices
+    newPieces.sort(() => Math.random() - 0.5);
+
     setImage(img);
     setDifficulty(diff);
-    setPieces(makePieces(GRIDS[diff]));
+    setPieces(newPieces);
     setMoves(0);
+    setPlacedCount(0);
     setShowComplete(false);
-    setLastMoved(null);
     setScreen("playing");
   }, []);
 
-  const clickPiece = useCallback((piece: Piece) => {
-    if (piece.isEmpty) return;
-    setPieces((prev) => {
-      const empty = prev.find((p) => p.isEmpty)!;
-      const dr = Math.abs(piece.currentRow - empty.currentRow);
-      const dc = Math.abs(piece.currentCol - empty.currentCol);
-      if (!((dr === 1 && dc === 0) || (dr === 0 && dc === 1))) return prev;
-      const next = prev.map((p) => {
-        if (p.id === piece.id)
-          return {
-            ...p,
-            currentCol: empty.currentCol,
-            currentRow: empty.currentRow,
-          };
-        if (p.id === empty.id)
-          return {
-            ...p,
-            currentCol: piece.currentCol,
-            currentRow: piece.currentRow,
-          };
-        return p;
-      });
-      setMoves((m) => m + 1);
-      setLastMoved(piece.id);
-      if (isSolved(next))
-        setTimeout(() => {
-          setScreen("complete");
-          setTimeout(() => setShowComplete(true), 500);
-        }, 150);
-      return next;
-    });
+  // ── DRAG LOGIC ────────────────────────────────────────────────────────────
+  const getSnapTarget = useCallback(
+    (piece: Piece, diff: Difficulty) => {
+      const g = GRIDS[diff];
+      const cell = CELL_SIZE();
+      const targetX = piece.correctCol * cell;
+      const targetY = piece.correctRow * cell;
+      const dist = Math.hypot(piece.x - targetX, piece.y - targetY);
+      return { targetX, targetY, close: dist < cell * 0.42 };
+    },
+    [CELL_SIZE],
+  );
+
+  const onPointerDown = useCallback((e: React.PointerEvent, id: number) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const piece = piecesRef.current.find((p) => p.id === id);
+    if (!piece || piece.placed) return;
+    dragRef.current = {
+      id,
+      startX: e.clientX,
+      startY: e.clientY,
+      pieceX: piece.x,
+      pieceY: piece.y,
+    };
+    setPieces((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, dragging: true } : p)),
+    );
   }, []);
 
-  const grid = GRIDS[difficulty];
-  const CELL = Math.floor(boardSize / grid);
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    const { id, startX, startY, pieceX, pieceY } = dragRef.current;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    setPieces((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, x: pieceX + dx, y: pieceY + dy } : p,
+      ),
+    );
+  }, []);
 
-  const diffConfig = {
-    easy: {
-      label: "fácil 3×3",
-      desc: "Para entrar en calor 🌸",
-      color: "rgba(192,132,252,",
+  const onPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragRef.current) return;
+      const { id, startX, startY } = dragRef.current;
+      dragRef.current = null;
+
+      const moved = Math.hypot(e.clientX - startX, e.clientY - startY) > 4;
+      if (moved) setMoves((m) => m + 1);
+
+      setPieces((prev) => {
+        const piece = prev.find((p) => p.id === id);
+        if (!piece) return prev;
+        const { targetX, targetY, close } = getSnapTarget(piece, difficulty);
+        const updated = prev.map((p) => {
+          if (p.id !== id) return p;
+          if (close)
+            return {
+              ...p,
+              x: targetX,
+              y: targetY,
+              placed: true,
+              dragging: false,
+            };
+          return { ...p, dragging: false };
+        });
+        const placed = updated.filter((p) => p.placed).length;
+        setPlacedCount(placed);
+        if (placed === GRIDS[difficulty] * GRIDS[difficulty]) {
+          setTimeout(() => {
+            setScreen("complete");
+            setTimeout(() => setShowComplete(true), 500);
+          }, 200);
+        }
+        return updated;
+      });
     },
-    medium: {
-      label: "medio 4×4",
-      desc: "Un poco más de desafío 💪",
-      color: "rgba(255,107,157,",
-    },
-    hard: {
-      label: "difícil 5×5",
-      desc: "¡Tú puedes! 🔥",
-      color: "rgba(255,180,60,",
-    },
-  };
+    [difficulty, getSnapTarget],
+  );
+
+  const cell = CELL_SIZE();
+  const board = cell * GRIDS[difficulty];
+  const total = GRIDS[difficulty] * GRIDS[difficulty];
 
   return (
     <div
+      ref={containerRef}
       style={{
         minHeight: "100vh",
         background:
@@ -183,6 +235,7 @@ export default function PuzzleGame() {
         alignItems: "center",
         opacity: leaving ? 0 : 1,
         transition: "opacity 0.5s ease",
+        userSelect: "none",
       }}
     >
       <button
@@ -208,7 +261,7 @@ export default function PuzzleGame() {
       </button>
 
       {/* Instructions */}
-      {showInstructions && (
+      {showInstr && (
         <div
           style={{
             position: "fixed",
@@ -220,7 +273,7 @@ export default function PuzzleGame() {
             alignItems: "center",
             justifyContent: "center",
             padding: "1.5rem",
-            opacity: instrVisible ? 1 : 0,
+            opacity: instrVis ? 1 : 0,
             transition: "opacity 0.35s ease",
           }}
         >
@@ -234,7 +287,7 @@ export default function PuzzleGame() {
               maxWidth: "360px",
               width: "100%",
               textAlign: "center",
-              transform: instrVisible ? "scale(1)" : "scale(0.96)",
+              transform: instrVis ? "scale(1)" : "scale(0.96)",
               transition: "transform 0.35s ease",
               boxShadow: "0 0 60px rgba(192,84,252,0.1)",
             }}
@@ -249,7 +302,7 @@ export default function PuzzleGame() {
                 marginBottom: "0.4rem",
               }}
             >
-              Arma el puzzle
+              Rompecabezas
             </h2>
             <p
               style={{
@@ -260,7 +313,7 @@ export default function PuzzleGame() {
                 marginBottom: "1.4rem",
               }}
             >
-              ¡tú puedes!
+              ¡arrastra las piezas a su lugar!
             </p>
             <div
               style={{
@@ -282,8 +335,9 @@ export default function PuzzleGame() {
               {[
                 "🖼️  Elige una de nuestras fotos",
                 "⚡  Elige dificultad: fácil (3×3), medio (4×4) o difícil (5×5)",
-                "👆  Toca las piezas junto al hueco para moverlas",
-                "🏆  Arma la foto y recibe un mensaje especial ❤️‍🩹",
+                "👆  Arrastra cada pieza a donde crees que va",
+                "✨  Las piezas encajan solas si las sueltas cerca",
+                "🏆  ¡Arma la foto y recibe un mensaje especial! ❤️‍🩹",
               ].map((tip) => (
                 <p
                   key={tip}
@@ -301,8 +355,8 @@ export default function PuzzleGame() {
             </div>
             <button
               onClick={() => {
-                setInstrVisible(false);
-                setTimeout(() => setShowInstructions(false), 300);
+                setInstrVis(false);
+                setTimeout(() => setShowInstr(false), 300);
               }}
               style={{
                 width: "100%",
@@ -318,7 +372,7 @@ export default function PuzzleGame() {
                 cursor: "pointer",
               }}
             >
-              ¡entendido! 🧩
+              ¡a jugar! 🧩
             </button>
           </div>
         </div>
@@ -346,7 +400,7 @@ export default function PuzzleGame() {
               marginBottom: "0.4rem",
             }}
           >
-            Arma el puzzle
+            Rompecabezas
           </h1>
           <p
             style={{
@@ -386,11 +440,11 @@ export default function PuzzleGame() {
                 key={img.src}
                 onClick={() => setImage(img.src)}
                 style={{
-                  width: "88px",
-                  height: "88px",
+                  width: "90px",
+                  height: "90px",
                   padding: 0,
                   border: `2px solid ${image === img.src ? "rgba(255,107,157,0.8)" : "rgba(255,107,157,0.12)"}`,
-                  borderRadius: "6px",
+                  borderRadius: "8px",
                   overflow: "hidden",
                   cursor: "pointer",
                   boxShadow:
@@ -432,7 +486,7 @@ export default function PuzzleGame() {
             }}
           >
             {(["easy", "medium", "hard"] as Difficulty[]).map((d) => {
-              const cfg = diffConfig[d];
+              const cfg = DIFF_CONFIG[d];
               const sel = difficulty === d;
               return (
                 <button
@@ -440,8 +494,8 @@ export default function PuzzleGame() {
                   onClick={() => setDifficulty(d)}
                   style={{
                     padding: "0.75rem 1.2rem",
-                    background: sel ? `${cfg.color}0.1)` : "transparent",
-                    border: `1px solid ${cfg.color}${sel ? 0.5 : 0.12})`,
+                    background: sel ? `rgba(${cfg.color},0.1)` : "transparent",
+                    border: `1px solid rgba(${cfg.color},${sel ? 0.5 : 0.12})`,
                     borderRadius: "6px",
                     color: sel ? "#f8d4ef" : "rgba(200,180,255,0.32)",
                     fontFamily: "Georgia, serif",
@@ -451,11 +505,16 @@ export default function PuzzleGame() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    boxShadow: sel ? `0 0 16px ${cfg.color}0.12)` : "none",
+                    boxShadow: sel ? `0 0 16px rgba(${cfg.color},0.1)` : "none",
                   }}
                 >
-                  <span>{cfg.label}</span>
-                  <span style={{ fontSize: "0.75rem", opacity: 0.65 }}>
+                  <span>
+                    {cfg.label}{" "}
+                    <span style={{ opacity: 0.5, fontSize: "0.8rem" }}>
+                      {cfg.grid}
+                    </span>
+                  </span>
+                  <span style={{ fontSize: "0.75rem", opacity: 0.6 }}>
                     {cfg.desc}
                   </span>
                 </button>
@@ -464,13 +523,13 @@ export default function PuzzleGame() {
           </div>
 
           <button
-            onClick={() => start(image, difficulty)}
+            onClick={() => startGame(image, difficulty)}
             style={{
               padding: "0.9rem 2.5rem",
               background:
                 "linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.1))",
               border: "1px solid rgba(255,107,157,0.4)",
-              borderRadius: "4px",
+              borderRadius: "6px",
               color: "#f8d4ef",
               fontFamily: "Georgia, serif",
               fontSize: "1rem",
@@ -479,7 +538,7 @@ export default function PuzzleGame() {
               boxShadow: "0 0 20px rgba(255,107,157,0.1)",
             }}
           >
-            ¡armar! 🧩
+            ¡empezar! 🧩
           </button>
         </div>
       )}
@@ -495,12 +554,13 @@ export default function PuzzleGame() {
             width: "100%",
           }}
         >
+          {/* Header */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: "1.2rem",
-              marginBottom: "1rem",
+              marginBottom: "0.8rem",
             }}
           >
             <span
@@ -510,7 +570,8 @@ export default function PuzzleGame() {
                 color: "rgba(200,180,255,0.5)",
               }}
             >
-              movimientos: <span style={{ color: "#f8d4ef" }}>{moves}</span>
+              piezas: <span style={{ color: "#f8d4ef" }}>{placedCount}</span>
+              <span style={{ opacity: 0.4 }}> / {total}</span>
             </span>
             <span
               style={{
@@ -519,7 +580,7 @@ export default function PuzzleGame() {
                 color: "rgba(200,180,255,0.3)",
               }}
             >
-              {grid}×{grid}
+              {moves} movimientos
             </span>
             <button
               onClick={() => setScreen("select")}
@@ -538,101 +599,171 @@ export default function PuzzleGame() {
             </button>
           </div>
 
+          {/* Progress bar */}
           <div
-            ref={boardRef}
             style={{
-              position: "relative",
-              width: boardSize,
-              height: boardSize,
-              border: "1px solid rgba(255,107,157,0.1)",
-              borderRadius: "6px",
+              width: board,
+              height: "3px",
+              background: "rgba(255,107,157,0.1)",
+              borderRadius: "2px",
+              marginBottom: "0.8rem",
               overflow: "hidden",
-              boxShadow: "0 0 40px rgba(192,84,252,0.07)",
             }}
           >
+            <div
+              style={{
+                height: "100%",
+                borderRadius: "2px",
+                width: `${(placedCount / total) * 100}%`,
+                background: "linear-gradient(to right, #ff6b9d, #c084fc)",
+                transition: "width 0.3s ease",
+              }}
+            />
+          </div>
+
+          {/* Board */}
+          <div
+            ref={boardRef}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{
+              position: "relative",
+              width: board,
+              height: board,
+              border: "1px solid rgba(255,107,157,0.12)",
+              borderRadius: "6px",
+              overflow: "visible",
+              boxShadow: "0 0 40px rgba(192,84,252,0.06)",
+              touchAction: "none",
+            }}
+          >
+            {/* Grid guide */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: "6px",
+                overflow: "hidden",
+                backgroundImage: `
+                linear-gradient(rgba(255,107,157,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,107,157,0.08) 1px, transparent 1px)
+              `,
+                backgroundSize: `${cell}px ${cell}px`,
+                zIndex: 0,
+              }}
+            />
+
+            {/* Target slots */}
+            {pieces.map((piece) => (
+              <div
+                key={`slot-${piece.id}`}
+                style={{
+                  position: "absolute",
+                  left: piece.correctCol * cell,
+                  top: piece.correctRow * cell,
+                  width: cell,
+                  height: cell,
+                  border: `1px dashed rgba(255,107,157,${piece.placed ? 0 : 0.2})`,
+                  borderRadius: "2px",
+                  transition: "border-color 0.3s ease",
+                  zIndex: 1,
+                }}
+              />
+            ))}
+
             {/* Ghost image */}
             <img
               src={image}
-              alt="preview"
+              alt=""
               style={{
                 position: "absolute",
                 inset: 0,
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                opacity: 0.05,
+                opacity: 0.06,
                 pointerEvents: "none",
+                borderRadius: "6px",
                 zIndex: 0,
               }}
             />
 
-            {pieces.map((piece) => {
-              if (piece.isEmpty)
-                return (
-                  <div
-                    key={piece.id}
-                    style={{
-                      position: "absolute",
-                      left: piece.currentCol * CELL,
-                      top: piece.currentRow * CELL,
-                      width: CELL,
-                      height: CELL,
-                      background: "rgba(0,0,0,0.7)",
-                      zIndex: 1,
-                    }}
-                  />
-                );
-
-              const isAdjacentToEmpty = (() => {
-                const empty = pieces.find((p) => p.isEmpty)!;
-                const dr = Math.abs(piece.currentRow - empty.currentRow);
-                const dc = Math.abs(piece.currentCol - empty.currentCol);
-                return (dr === 1 && dc === 0) || (dr === 0 && dc === 1);
-              })();
-
-              const justMoved = lastMoved === piece.id;
-
+            {/* Pieces */}
+            {pieces.map((piece, idx) => {
+              const isActive = piece.dragging;
               return (
-                <button
+                <div
                   key={piece.id}
-                  onClick={() => clickPiece(piece)}
+                  onPointerDown={(e) => onPointerDown(e, piece.id)}
                   style={{
                     position: "absolute",
-                    left: piece.currentCol * CELL,
-                    top: piece.currentRow * CELL,
-                    width: CELL,
-                    height: CELL,
-                    padding: 0,
-                    border: `1px solid ${isAdjacentToEmpty ? "rgba(255,107,157,0.35)" : "rgba(0,0,0,0.3)"}`,
-                    cursor: isAdjacentToEmpty ? "pointer" : "default",
+                    left: piece.x,
+                    top: piece.y,
+                    width: cell,
+                    height: cell,
+                    cursor: piece.placed
+                      ? "default"
+                      : isActive
+                        ? "grabbing"
+                        : "grab",
+                    zIndex: piece.placed ? 2 : isActive ? 100 : 10 + idx,
+                    transition: piece.dragging
+                      ? "none"
+                      : "left 0.2s ease, top 0.2s ease, box-shadow 0.15s ease",
+                    touchAction: "none",
                     overflow: "hidden",
-                    transition:
-                      "left 0.12s ease, top 0.12s ease, border-color 0.2s ease, box-shadow 0.2s ease",
-                    boxSizing: "border-box",
-                    zIndex: justMoved ? 3 : 2,
-                    boxShadow: justMoved
-                      ? "inset 0 0 0 2px rgba(255,107,157,0.5)"
-                      : isAdjacentToEmpty
-                        ? "inset 0 0 0 1px rgba(255,107,157,0.2)"
-                        : "none",
+                    borderRadius: "2px",
+                    boxShadow: piece.placed
+                      ? "none"
+                      : isActive
+                        ? "0 8px 24px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,107,157,0.6)"
+                        : "0 3px 10px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08)",
+                    transform: isActive ? "scale(1.06)" : "scale(1)",
+                    filter: piece.placed
+                      ? "brightness(1)"
+                      : isActive
+                        ? "brightness(1.08)"
+                        : "brightness(0.92)",
                   }}
                 >
+                  {/* Piece image slice */}
                   <div
                     style={{
                       position: "absolute",
-                      width: boardSize,
-                      height: boardSize,
+                      width: board,
+                      height: board,
                       backgroundImage: `url(${image})`,
                       backgroundSize: "cover",
-                      left: -piece.correctCol * CELL,
-                      top: -piece.correctRow * CELL,
-                      filter: isAdjacentToEmpty
-                        ? "brightness(1.08)"
-                        : "brightness(1)",
-                      transition: "filter 0.2s ease",
+                      left: -piece.correctCol * cell,
+                      top: -piece.correctRow * cell,
                     }}
                   />
-                </button>
+                  {/* Piece placed glow */}
+                  {piece.placed && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        border: "1.5px solid rgba(192,132,252,0.5)",
+                        borderRadius: "2px",
+                        animation: "none",
+                        background: "rgba(192,132,252,0.04)",
+                      }}
+                    />
+                  )}
+                  {/* Piece border */}
+                  {!piece.placed && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        borderRadius: "2px",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  )}
+                </div>
               );
             })}
           </div>
@@ -640,14 +771,14 @@ export default function PuzzleGame() {
           <p
             style={{
               fontFamily: "Georgia, serif",
-              fontSize: "0.7rem",
+              fontSize: "0.68rem",
               color: "rgba(200,180,255,0.2)",
               marginTop: "0.8rem",
               letterSpacing: "0.12em",
               textTransform: "uppercase",
             }}
           >
-            las piezas rosadas se pueden mover
+            arrastra cada pieza a su lugar ✦ encajan solas si están cerca
           </p>
         </div>
       )}
@@ -739,7 +870,7 @@ export default function PuzzleGame() {
               marginBottom: "2rem",
             }}
           >
-            {MESSAGES[image] || "Escribe aquí tu mensaje ❤️‍🩹"}
+            {MESSAGES[image] || "❤️‍🩹"}
           </p>
           <div
             style={{
@@ -759,7 +890,7 @@ export default function PuzzleGame() {
                 background:
                   "linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.1))",
                 border: "1px solid rgba(255,107,157,0.35)",
-                borderRadius: "4px",
+                borderRadius: "6px",
                 color: "#f8d4ef",
                 fontFamily: "Georgia, serif",
                 fontSize: "0.9rem",
@@ -767,7 +898,7 @@ export default function PuzzleGame() {
                 cursor: "pointer",
               }}
             >
-              otro puzzle ♡
+              otro ♡
             </button>
             <button
               onClick={goBack}
@@ -775,7 +906,7 @@ export default function PuzzleGame() {
                 padding: "0.8rem 1.5rem",
                 background: "transparent",
                 border: "1px solid rgba(192,132,252,0.2)",
-                borderRadius: "4px",
+                borderRadius: "6px",
                 color: "rgba(200,170,255,0.5)",
                 fontFamily: "Georgia, serif",
                 fontSize: "0.9rem",
