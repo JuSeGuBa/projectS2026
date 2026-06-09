@@ -27,9 +27,9 @@ const IMAGES = [
 ];
 
 const MESSAGES: Record<string, string> = {
-  "/photos/puzzle/puzzle-1.jpg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
-  "/photos/puzzle/puzzle-2.jpeg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
-  "/photos/puzzle/puzzle-3.jpeg": "Escribe aquí tu mensaje para esta foto ❤️‍🩹",
+  "/photos/puzzle/puzzle-1.jpg": "Te amo demasiado ❤️‍🩹",
+  "/photos/puzzle/puzzle-2.jpeg": "Hacemos bonita pareja amor jeje ❤️‍🩹",
+  "/photos/puzzle/puzzle-3.jpeg": "Eres lo mejor que le ha pasado a mi vida ❤️‍🩹",
 };
 
 const DIFF_CONFIG = {
@@ -837,7 +837,7 @@ export default function PuzzleGame() {
               marginBottom: "0.5rem",
             }}
           >
-            ¡Lo armaste! ✨
+            ¡Lo armaste mi amorrrrrrrrrrrrrr!
           </p>
           <p
             style={{

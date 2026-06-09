@@ -15,123 +15,149 @@ const PAGES: Page[] = [
   {
     id: 1,
     image: "/photos/album/page-01.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "2014",
+    message:
+      "Amor tu no me crees, es el destino estar juntosssss, jejejeje. Mi primer beso y el ultimo, fuiste y seras tu.",
   },
   {
     id: 2,
     image: "/photos/album/page-02.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Diciembre de 2025",
+    message:
+      "Cada abrazo tuyo es paz en medio del caos, y creo que para ti tambien lo fue, jamas olvides, que siempre estare para ti, siempre. Porque siempre te amare incondicionalmente",
   },
   {
     id: 3,
     image: "/photos/album/page-03.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Mayo de 2025",
+    message:
+      "Recuerdo que hiciste ese collage para mi, porque sabes que siempre seras la mujer mas hermosa del planeta y JAMAS dudes eso. Mira nomas toda esa belleza, esa Reina 👑",
   },
   {
     id: 4,
     image: "/photos/album/page-04.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Junio de 2025",
+    message:
+      "Esas videollamadas contigo si que eran lo mejor del dia, me acuerdo que ese dia, tenia creo que dañado el celular, entonces yo andaba en el computador, y si vez mi camara yo estaba en la cocina, me acuerdo que el computador casi se me cae, porque en una mano llevaba el computador y la otra mano llevaba la silla jajajajjaj, pero por ti mi amor lo que sea jaja",
   },
   {
     id: 5,
     image: "/photos/album/page-05.png",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Septiembre de 2025",
+    message:
+      "Recuerdo que como no teniamos fotos juntos en persona, obviamente por la distancia, tu y yo si que quemamos esa IA jajaja para imaginar como seria nuestras fotos y al final la espera valio la pena.",
   },
   {
     id: 6,
     image: "/photos/album/page-06.png",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Septiembre de 2025",
+    message:
+      "Algun dia, yo se que si. Cumpliremos nuestro sueño de tener nuestra familia.",
   },
   {
     id: 7,
     image: "/photos/album/page-07.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Noviembre de 2025",
+    message:
+      "Ese dia no solo estabas muy bella, sino que tambien fue el dia de tu bautismo, nunca te lo dije, pero yo me puse tan feliz ese dia que se me aguaron los ojos jajajaja, siempre estare orgulloso de ti.",
   },
   {
     id: 8,
     image: "/photos/album/page-08.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Diciembre de 2025",
+    message:
+      "Mi vida creo que si estamos juntos jamas nos vamos aburrir jajajaja siempre se nos ocurre algo, porque ese dia si que la pasamos bien jaja, contigo todo es lo mejor, es que no se, osea jajajajja todo es tan chevere cuando estamos juntos jejeje",
   },
   {
     id: 9,
     image: "/photos/album/page-09.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Marzo de 2026",
+    message:
+      "De verdad cuando estamos juntos, yo no se, pero es lo mejor o no se si solo para mi, pero mira esas caras JAJA, osea no se creo que somos felices juntos, yo lo fui y realmente lo soy, no se tu, pero yo si jajaj",
   },
   {
     id: 10,
     image: "/photos/album/page-10.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Marzo de 2026",
+    message:
+      "Esta foto la verdad me parece muy hermosa, son de mis favoritas, espero que tambien te guste. Es que la amo, no se, creo que muestra como somos en realidad jeje",
   },
   {
     id: 11,
     image: "/photos/album/page-11.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Marzo de 2026",
+    message:
+      "Tu y yo tenemos fotos muy hermosas, pero jamas las olvides. Ese dia y no solo ese osea todos son lo mejor contigo jeje.",
   },
   {
     id: 12,
     image: "/photos/album/page-12.mp4",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de este video.",
+    date: "Marzo de 2026",
+    message:
+      "jajajajaj ese video si que me hace reir jaja, son de mis favoritos, yo te amo mucho, y sino me crees, mira la forma en que te veo en el video y lo feliz que soy",
     isVideo: true,
   },
   {
     id: 13,
     image: "/photos/album/page-13.jpeg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Abril de 2026",
+    message:
+      "Tu y yo tenemos fotos muy hermosas, este dia de asamblea fue muy chevere, porque hace añosss no estabamos juntos en una asamblea, y mira jijiji",
   },
   {
     id: 14,
     image: "/photos/album/page-14.jpeg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Abril de 2026",
+    message:
+      "Issss eso es mucho porte de los dos, pa que veas la pareja tan bonita que hacemos, pero como no me crees jaja mentiras. Mira ese porte JAJA",
   },
   {
     id: 15,
     image: "/photos/album/page-15.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Abril de 2026",
+    message:
+      "Esta foto es muy linda, oye yo si que soy cun chicle hay pegado JAJAJJAj, si me quieres asi? JAJ dios mio, pero amo esa foto",
   },
   {
     id: 16,
     image: "/photos/album/page-16.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Abril de 2026",
+    message:
+      "Esta foto es muy hermosa la verdad, no dire nada mas jeje, es hermosa esta foto",
   },
   {
     id: 17,
     image: "/photos/album/page-17.jpg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Abril de 2026",
+    message:
+      "JUMMMM SOSPECHOSAAAAA AJJAJA, dios mio que boletaaaa jajajaja, pero es genial JAJAJ, esa foto es muy nosotros JAJ",
   },
   {
     id: 18,
     image: "/photos/album/page-18.jpeg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Mayo de 2026",
+    message:
+      "Ese dia fue bonito amor y para que veas como te cuido jajaja, yo te amo mucho. Esta foto esta chevere jejeje",
   },
   {
     id: 19,
     image: "/photos/album/page-19.jpeg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Mayo de 2026",
+    message:
+      "Issss es que mira ese porte mi amor, la pareja del año, reasperos mi amor jajaja mentiras. Esta foto es muy bonita, y yo no me habia dado cuenta que me cogiste el brazo jajajaj jummmmmm JAJ, te amo demasiado",
   },
   {
     id: 20,
     image: "/photos/album/page-20.jpeg",
-    date: "Fecha aquí",
-    message: "Escribe aquí el mensaje corto de esta foto.",
+    date: "Mayo de 2026",
+    message:
+      "Esa foto es genial, Maricela quedo contratada jajajaj. Todos contentos nosotros jjaja",
+  },
+  {
+    id: 21,
+    image: "/photos/album/page-21.jpeg",
+    date: "Mayo de 2026",
+    message: "Y esta foto la verdad me parece muy bonita. Uno para el otro...",
   },
 ];
 
@@ -642,8 +668,7 @@ export default function AlbumScene() {
                       maxWidth: "240px",
                     }}
                   >
-                    "Porque cada momento contigo merece ser guardado para
-                    siempre."
+                    "Porque cada momento juntos es lo mejor del mundo. "
                   </p>
 
                   <div
@@ -739,8 +764,8 @@ export default function AlbumScene() {
                       maxWidth: "230px",
                     }}
                   >
-                    seguiremos llenando estas páginas juntos, un momento a la
-                    vez.
+                    seguiremos formando mas recuerdos mi amor, eso te lo
+                    aseguro... Te Amo demasiado pedazo de mi vida ❤️‍🩹
                   </p>
                   <div
                     style={{
