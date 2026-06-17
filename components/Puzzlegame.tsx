@@ -54,6 +54,24 @@ const DIFF_CONFIG = {
 };
 
 export default function PuzzleGame() {
+  useEffect(() => {
+    const audio = new Audio("/music/CuandoTeBesé.mp3");
+    audio.loop = true;
+    audio.volume = 0.35;
+
+    const playAudio = () => {
+      audio.play().catch(() => {});
+      window.removeEventListener("click", playAudio);
+    };
+
+    window.addEventListener("click", playAudio);
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+      window.removeEventListener("click", playAudio);
+    };
+  }, []);
   const router = useRouter();
   const [screen, setScreen] = useState<"select" | "playing" | "complete">(
     "select",

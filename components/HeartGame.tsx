@@ -383,6 +383,24 @@ function HeartIcon({
 
 // ── Main Game ─────────────────────────────────────────────────────────────────
 export default function HeartGame() {
+  useEffect(() => {
+    const audio = new Audio("/music/LaDiosa.mp3");
+    audio.loop = true;
+    audio.volume = 0.35;
+
+    const playAudio = () => {
+      audio.play().catch(() => {});
+      window.removeEventListener("click", playAudio);
+    };
+
+    window.addEventListener("click", playAudio);
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+      window.removeEventListener("click", playAudio);
+    };
+  }, []);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const router = useRouter();
 

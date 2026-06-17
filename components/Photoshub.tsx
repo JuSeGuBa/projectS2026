@@ -112,7 +112,7 @@ export default function PhotosHub() {
             textShadow: "0 0 40px rgba(192,132,252,0.3)",
           }}
         >
-          Nuestras fotos
+          Nuestro espacio
         </h1>
 
         <p
@@ -125,7 +125,7 @@ export default function PhotosHub() {
             letterSpacing: "0.06em",
           }}
         >
-          cada imagen guarda un pedazo de lo nuestro
+          cada rincón guarda algo nuestro
         </p>
 
         <div
@@ -134,7 +134,7 @@ export default function PhotosHub() {
           <PhotoButton
             onClick={() => navigate("/photos/puzzle")}
             icon="🧩"
-            title="Arma el puzzle Hermosa 👑"
+            title="Arma el puzzle"
             desc="Reconstruye nuestros momentos pieza a pieza"
             color="255,107,157"
           />
@@ -147,7 +147,7 @@ export default function PhotosHub() {
           />
           <PhotoButton
             onClick={() => navigate("/photos/album")}
-            icon="♡"
+            icon="📖"
             title="Nuestro álbum"
             desc="Hojea las páginas de lo que somos"
             color="255,150,180"
@@ -172,7 +172,6 @@ function PhotoButton({
   color: string;
 }) {
   const [hovered, setHovered] = useState(false);
-
   return (
     <button
       onClick={onClick}

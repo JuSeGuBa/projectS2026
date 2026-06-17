@@ -39,7 +39,6 @@ export default function Home() {
       }}
     >
       <StarCanvas />
-
       <div
         style={{
           position: "absolute",
@@ -147,6 +146,12 @@ export default function Home() {
             label="Nuestras fotos"
             variant="rose"
           />
+          <NavButton
+            onClick={() => navigate("/photos/games")}
+            icon="🎮"
+            label="Miraaaa aqui hay mas jueguitosssss"
+            variant="gold"
+          />
         </div>
 
         <div
@@ -190,7 +195,7 @@ function NavButton({
   onClick: () => void;
   icon: string;
   label: string;
-  variant: "pink" | "purple" | "rose";
+  variant: "pink" | "purple" | "rose" | "gold";
 }) {
   const [hovered, setHovered] = useState(false);
 
@@ -212,6 +217,12 @@ function NavButton({
       border: "255,130,160",
       text: "#ffb3c6",
       textBase: "rgba(255,160,190,0.8)",
+    },
+    gold: {
+      bg: "rgba(200,160,60,",
+      border: "200,160,60",
+      text: "#e8c860",
+      textBase: "rgba(200,170,80,0.75)",
     },
   };
   const c = colors[variant];

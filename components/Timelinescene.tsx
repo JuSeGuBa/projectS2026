@@ -117,7 +117,24 @@ export default function TimelineScene() {
   const [modalVisible, setModalVisible] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
   const [instrVisible, setInstrVisible] = useState(false);
+  useEffect(() => {
+    const audio = new Audio("/music/10RazonesParaAmarte.mp3");
+    audio.loop = true;
+    audio.volume = 0.35;
 
+    const playAudio = () => {
+      audio.play().catch(() => {});
+      window.removeEventListener("click", playAudio);
+    };
+
+    window.addEventListener("click", playAudio);
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+      window.removeEventListener("click", playAudio);
+    };
+  }, []);
   useEffect(() => {
     setTimeout(() => setInstrVisible(true), 60);
   }, []);

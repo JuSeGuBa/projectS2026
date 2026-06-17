@@ -31,21 +31,21 @@ const PAGES: Page[] = [
     image: "/photos/album/page-03.jpg",
     date: "Mayo de 2025",
     message:
-      "Recuerdo que hiciste ese collage para mi, porque sabes que siempre seras la mujer mas hermosa del planeta y JAMAS dudes eso. Mira nomas toda esa belleza, esa Reina 👑",
+      "Recuerdo que hiciste ese collage para mi, porque sabes que siempre seras la mujer mas hermosa del planeta y JAMAS dudes eso. Mira no más toda esa belleza, esa Reina 👑",
   },
   {
     id: 4,
     image: "/photos/album/page-04.jpg",
     date: "Junio de 2025",
     message:
-      "Esas videollamadas contigo si que eran lo mejor del dia, me acuerdo que ese dia, tenia creo que dañado el celular, entonces yo andaba en el computador, y si vez mi camara yo estaba en la cocina, me acuerdo que el computador casi se me cae, porque en una mano llevaba el computador y la otra mano llevaba la silla jajajajjaj, pero por ti mi amor lo que sea jaja",
+      "Esas videollamadas contigo si que eran lo mejor del dia, me acuerdo que ese dia, tenia creo que dañado el celular, entonces yo andaba en el computador, y si ves mi camara yo estaba en la cocina, me acuerdo que el computador casi se me cae, porque en una mano llevaba el computador y la otra mano llevaba la silla jajajajjaj, pero por ti mi amor lo que sea jaja",
   },
   {
     id: 5,
     image: "/photos/album/page-05.png",
     date: "Septiembre de 2025",
     message:
-      "Recuerdo que como no teniamos fotos juntos en persona, obviamente por la distancia, tu y yo si que quemamos esa IA jajaja para imaginar como seria nuestras fotos y al final la espera valio la pena.",
+      "Recuerdo que como no teniamos fotos juntos en persona, obviamente por la distancia, tu y yo si que quemamos esa IA jajaja para imaginar como serían nuestras fotos y al final la espera valio la pena.",
   },
   {
     id: 6,
@@ -94,7 +94,7 @@ const PAGES: Page[] = [
     image: "/photos/album/page-12.mp4",
     date: "Marzo de 2026",
     message:
-      "jajajajaj ese video si que me hace reir jaja, son de mis favoritos, yo te amo mucho, y sino me crees, mira la forma en que te veo en el video y lo feliz que soy",
+      "jajajajaj ese video si que me hace reir jaja, son de mis favoritos, yo te amo mucho, y si no me crees, mira la forma en que te veo en el video y lo feliz que soy",
     isVideo: true,
   },
   {
@@ -116,7 +116,7 @@ const PAGES: Page[] = [
     image: "/photos/album/page-15.jpg",
     date: "Abril de 2026",
     message:
-      "Esta foto es muy linda, oye yo si que soy cun chicle hay pegado JAJAJJAj, si me quieres asi? JAJ dios mio, pero amo esa foto",
+      "Esta foto es muy linda, oye yo si que soy un chicle hay pegado JAJAJJAj, si me quieres asi? JAJ dios mio, pero amo esa foto",
   },
   {
     id: 16,
@@ -159,9 +159,140 @@ const PAGES: Page[] = [
     date: "Mayo de 2026",
     message: "Y esta foto la verdad me parece muy bonita. Uno para el otro...",
   },
+  {
+    id: 22,
+    image: "/photos/album/page-22.png",
+    date: "",
+    message:
+      "Recuerdas las metas que una ves hicimos? Mira todas las cumplimos jeje",
+  },
+  {
+    id: 23,
+    image: "/photos/album/page-23.mp4",
+    date: "Noviembre de 2025",
+    message:
+      "Mira se que este recuerdo no es de ambos, pero yo lo recuerdo mucho y para recuerdes tus logros, y que puedes cumplir lo que te propongas.",
+    isVideo: true,
+  },
+  {
+    id: 24,
+    image: "/photos/album/page-24.mp4",
+    date: "Diciembre de 2025",
+    message:
+      "Ese dia fue muy especial yo guardo todos los videos hasta los tiktoks tuyos jajaja, de aca para adelante puse los que me parecio mas de nosotros jeje. Como este video, esa mirada que te tengo y la tuya jeje",
+    isVideo: true,
+  },
+  {
+    id: 25,
+    image: "/photos/album/page-25.mp4",
+    date: "Julio de 2025",
+    message:
+      "Creo que nunca te lo dije, pero este video es muy especial para mi, ya que me ayudo en momentos dificiles al recordarte a ti y aunque para ti pueda ser normal este tiktok, para mi es muy especial.",
+    isVideo: true,
+  },
+  {
+    id: 26,
+    image: "/photos/album/page-26.mp4",
+    date: "Julio de 2025",
+    message:
+      "Tus ojos son todos hermosos, eres muy hermosa, JAMAS olvides eso.",
+    isVideo: true,
+  },
+  {
+    id: 27,
+    image: "/photos/album/page-27.mp4",
+    date: "Junio de 2025",
+    message:
+      "Pa que veas que yo siempre guardo todo lo que me mandas jejej amo todos tus videos, son bonitos recuerdos.",
+    isVideo: true,
+  },
+  {
+    id: 28,
+    image: "/photos/album/page-28.mp4",
+    date: "Agosto de 2025",
+    message: "Hermosa eres, hermosa, y todos tus videos los amo.",
+    isVideo: true,
+  },
+  {
+    id: 29,
+    image: "/photos/album/page-29.mp4",
+    date: "Julio de 2025",
+    message:
+      "Si yo se amor, que amor como el tuyo no hallare, jamas, pero tu jamas hallaras un amor como el mio.",
+    isVideo: true,
+  },
+  {
+    id: 30,
+    image: "/photos/album/page-30.mp4",
+    date: "Octubre de 2025",
+    message:
+      "Siempre ame nuestra conexion a distancia que nos grabamos de todo jaja",
+    isVideo: true,
+  },
+  {
+    id: 31,
+    image: "/photos/album/page-31.mp4",
+    date: "Septiembre de 2025",
+    message:
+      "Mi amor, tú y yo estamos destinados jejeje, te acuerdas de este tiktok? Tu lo hiciste jejje",
+    isVideo: true,
+  },
+  {
+    id: 32,
+    image: "/photos/album/page-32.mp4",
+    date: "Octubre de 2025",
+    message:
+      "Me acuerdo que tu en tiktok colocabas indirectas jaja para que yo hiciera estos tiktoks, jaja siempre son bonitos jeje",
+    isVideo: true,
+  },
+  {
+    id: 33,
+    image: "/photos/album/page-33.mp4",
+    date: "Agosto de 2025",
+    message:
+      "Creo que este fue en el mes de nuestro aniversario si no me equivoco, no me acuerdo bien, pero se que lo hice, por algo importante que paso en ese mes.",
+    isVideo: true,
+  },
+  {
+    id: 34,
+    image: "/photos/album/page-34.mp4",
+    date: "Agosto de 2025",
+    message:
+      "Ese video quedo chevere hay toda tu toda hermosa, me acuerdo que lo hice por algo importante que paso en Agosto creo.",
+    isVideo: true,
+  },
+  {
+    id: 35,
+    image: "/photos/album/page-35.mp4",
+    date: "Abril de 2025",
+    message: "Te acuerdas de este video que te hice? jejej",
+    isVideo: true,
+  },
+  {
+    id: 36,
+    image: "/photos/album/page-36.mp4",
+    date: "Mayo de 2025",
+    message: "Mira yo todo poeta, pa que veas jajaja, te acuerdas?",
+    isVideo: true,
+  },
+  {
+    id: 37,
+    image: "/photos/album/page-37.mp4",
+    date: "Aniversario de 2025",
+    message:
+      "Creo que este fue al año de nuestro aniversario. Oye nosotros como nos solucionabamos para darnos algo asi sea a distancia jaja.",
+    isVideo: true,
+  },
+  {
+    id: 38,
+    image: "/photos/album/page-38.mp4",
+    date: "",
+    message:
+      "Este es un video, coloque esa imagen de fondo jejeje, pero este es un video subele el volumen porque la idea es que escuches a ver si te acuerdas jajaja",
+    isVideo: true,
+  },
 ];
 
-// Pages: 0 = cover, 1..N = content, N+1 = last blank
 const COVER = -1;
 const LAST = PAGES.length;
 
@@ -176,9 +307,29 @@ export default function AlbumScene() {
   const [introVis, setIntroVis] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [touchX, setTouchX] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setTimeout(() => setIntroVis(true), 60);
+  }, []);
+
+  useEffect(() => {
+    const audio = new Audio("/music/Us.mp3");
+    audio.loop = true;
+    audio.volume = 0.35;
+    audioRef.current = audio;
+
+    const playAudio = () => {
+      audio.play().catch(() => {});
+      window.removeEventListener("click", playAudio);
+    };
+    window.addEventListener("click", playAudio);
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+      window.removeEventListener("click", playAudio);
+    };
   }, []);
 
   const closeIntro = () => {
@@ -198,6 +349,7 @@ export default function AlbumScene() {
     if (turning) return;
     if (dir === "fwd" && page >= LAST) return;
     if (dir === "bwd" && page <= COVER) return;
+    if (audioRef.current) audioRef.current.volume = 0.35;
     setTurnDir(dir);
     setTurning(true);
     setTimeout(() => {
@@ -218,7 +370,6 @@ export default function AlbumScene() {
   const isLast = page === LAST;
   const pageData = !isCover && !isLast ? PAGES[page] : null;
 
-  // Paper color cycling — warm cream tones
   const paperTones = [
     "#fdf8f0",
     "#fef9f2",
@@ -233,6 +384,13 @@ export default function AlbumScene() {
   ];
   const tone = isCover ? "#2a1a0e" : paperTones[page % paperTones.length];
 
+  const audioDown = () => {
+    if (audioRef.current) audioRef.current.volume = 0.07;
+  };
+  const audioUp = () => {
+    if (audioRef.current) audioRef.current.volume = 0.35;
+  };
+
   return (
     <>
       <style>{`
@@ -240,11 +398,8 @@ export default function AlbumScene() {
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .book-wrap {
-          perspective: 2000px;
-        }
+        .book-wrap { perspective: 2000px; }
 
-        /* ── PAGE TURN ── */
         .page-turner {
           position: absolute;
           inset: 0;
@@ -261,17 +416,16 @@ export default function AlbumScene() {
           animation: turnBwd 0.62s cubic-bezier(0.55,0,0.45,1) forwards;
         }
         @keyframes turnFwd {
-          0%   { transform: rotateY(0deg);    }
+          0%   { transform: rotateY(0deg); }
           40%  { box-shadow: -12px 0 30px rgba(0,0,0,0.45); }
           100% { transform: rotateY(-180deg); box-shadow: none; }
         }
         @keyframes turnBwd {
           0%   { transform: rotateY(-180deg); }
           40%  { box-shadow: 12px 0 30px rgba(0,0,0,0.45); }
-          100% { transform: rotateY(0deg);    box-shadow: none; }
+          100% { transform: rotateY(0deg); box-shadow: none; }
         }
 
-        /* ── PAPER LINES ── */
         .lined-paper::after {
           content: '';
           position: absolute;
@@ -283,7 +437,6 @@ export default function AlbumScene() {
           pointer-events: none;
         }
 
-        /* ── COVER TEXTURE ── */
         .book-cover {
           background:
             radial-gradient(ellipse at 30% 20%, rgba(120,60,20,0.4) 0%, transparent 60%),
@@ -291,7 +444,6 @@ export default function AlbumScene() {
             linear-gradient(135deg, #3d1f0a 0%, #2a1206 40%, #1e0d04 70%, #2e1608 100%);
         }
 
-        /* ── SPINE ── */
         .book-spine {
           background: linear-gradient(to right,
             #1a0905 0%, #3d1f0a 20%, #4a2510 45%,
@@ -300,7 +452,6 @@ export default function AlbumScene() {
           box-shadow: inset -4px 0 8px rgba(0,0,0,0.5);
         }
 
-        /* ── FOLD SHADOW on page ── */
         .fold-shadow {
           position: absolute;
           left: 0; top: 0; bottom: 0; width: 22px;
@@ -311,7 +462,6 @@ export default function AlbumScene() {
           z-index: 2;
         }
 
-        /* ── PAGE EDGES ── */
         .page-edges {
           position: absolute;
           right: -5px; top: 2px; bottom: 2px; width: 6px;
@@ -492,7 +642,6 @@ export default function AlbumScene() {
           onTouchEnd={onTouchEnd}
         >
           <div style={{ position: "relative" }}>
-            {/* Page stack (right edge illusion) */}
             <div className="page-edges" />
             {[4, 3, 2, 1].map((i) => (
               <div
@@ -523,7 +672,6 @@ export default function AlbumScene() {
                   "4px 6px 30px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)",
               }}
             >
-              {/* Spine */}
               <div
                 className="book-spine"
                 style={{
@@ -536,11 +684,8 @@ export default function AlbumScene() {
                   borderRadius: "4px 0 0 4px",
                 }}
               />
-
-              {/* Fold shadow */}
               <div className="fold-shadow" style={{ left: "18px" }} />
 
-              {/* Page number */}
               {!isCover && !isLast && (
                 <div
                   style={{
@@ -573,7 +718,6 @@ export default function AlbumScene() {
                     position: "relative",
                   }}
                 >
-                  {/* Decorative border */}
                   <div
                     style={{
                       position: "absolute",
@@ -592,8 +736,6 @@ export default function AlbumScene() {
                       pointerEvents: "none",
                     }}
                   />
-
-                  {/* Corner ornaments */}
                   {["0,0", "0,auto", "auto,0", "auto,auto"].map((pos, i) => (
                     <div
                       key={i}
@@ -620,7 +762,6 @@ export default function AlbumScene() {
                       }}
                     />
                   ))}
-
                   <div
                     style={{
                       fontSize: "1.8rem",
@@ -630,7 +771,6 @@ export default function AlbumScene() {
                   >
                     ♡
                   </div>
-
                   <h1
                     style={{
                       fontFamily:
@@ -646,7 +786,6 @@ export default function AlbumScene() {
                   >
                     Nuestro Álbum
                   </h1>
-
                   <div
                     style={{
                       width: "80px",
@@ -656,7 +795,6 @@ export default function AlbumScene() {
                       marginBottom: "1rem",
                     }}
                   />
-
                   <p
                     style={{
                       fontFamily: "'Playfair Display', Georgia, serif",
@@ -668,9 +806,8 @@ export default function AlbumScene() {
                       maxWidth: "240px",
                     }}
                   >
-                    "Porque cada momento juntos es lo mejor del mundo. "
+                    "Porque cada momento juntos es lo mejor del mundo."
                   </p>
-
                   <div
                     style={{
                       width: "60px",
@@ -680,7 +817,6 @@ export default function AlbumScene() {
                       margin: "1.5rem 0",
                     }}
                   />
-
                   <p
                     style={{
                       fontFamily: "'Playfair Display', Georgia, serif",
@@ -795,14 +931,12 @@ export default function AlbumScene() {
                   className="lined-paper"
                   style={{ position: "relative", background: tone }}
                 >
-                  {/* Photo */}
+                  {/* Photo / Video area */}
                   <div
-                    onClick={() => !pageData.isVideo && setFullscreen(true)}
                     style={{
                       aspectRatio: "4/3",
                       overflow: "hidden",
                       position: "relative",
-                      cursor: pageData.isVideo ? "default" : "zoom-in",
                       marginLeft: "18px",
                       width: "calc(100% - 18px)",
                     }}
@@ -818,9 +952,13 @@ export default function AlbumScene() {
                           objectFit: "cover",
                           display: "block",
                         }}
+                        onPlay={audioDown}
+                        onPause={audioUp}
+                        onEnded={audioUp}
                       />
                     ) : (
                       <img
+                        onClick={() => setFullscreen(true)}
                         src={pageData.image}
                         alt={`página ${page}`}
                         style={{
@@ -829,9 +967,11 @@ export default function AlbumScene() {
                           objectFit: "cover",
                           display: "block",
                           filter: "sepia(0.08) contrast(1.02)",
+                          cursor: "zoom-in",
                         }}
                       />
                     )}
+
                     {/* Vignette */}
                     <div
                       style={{
@@ -851,6 +991,31 @@ export default function AlbumScene() {
                         pointerEvents: "none",
                       }}
                     />
+
+                    {/* Fullscreen button for videos */}
+                    {pageData.isVideo && (
+                      <button
+                        onClick={() => setFullscreen(true)}
+                        style={{
+                          position: "absolute",
+                          bottom: "0.5rem",
+                          right: "0.6rem",
+                          background: "rgba(0,0,0,0.55)",
+                          border: "1px solid rgba(255,255,255,0.2)",
+                          borderRadius: "4px",
+                          color: "rgba(255,255,255,0.75)",
+                          fontSize: "0.7rem",
+                          padding: "2px 7px",
+                          cursor: "pointer",
+                          zIndex: 5,
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        ⛶
+                      </button>
+                    )}
+
+                    {/* Zoom hint for photos */}
                     {!pageData.isVideo && (
                       <div
                         style={{
@@ -874,7 +1039,6 @@ export default function AlbumScene() {
                       position: "relative",
                     }}
                   >
-                    {/* Date */}
                     <p
                       style={{
                         fontFamily: "'Playfair Display', Georgia, serif",
@@ -887,8 +1051,6 @@ export default function AlbumScene() {
                     >
                       {pageData.date}
                     </p>
-
-                    {/* Divider */}
                     <div
                       style={{
                         display: "flex",
@@ -920,8 +1082,6 @@ export default function AlbumScene() {
                         }}
                       />
                     </div>
-
-                    {/* Message */}
                     <p
                       style={{
                         fontFamily: "'Playfair Display', Georgia, serif",
@@ -939,7 +1099,7 @@ export default function AlbumScene() {
               )}
             </div>
 
-            {/* ── FLIP ANIMATION OVERLAY ── */}
+            {/* ── FLIP ANIMATION ── */}
             {turning && (
               <div
                 className={`page-turner turn-${turnDir}`}
@@ -953,7 +1113,6 @@ export default function AlbumScene() {
                   boxShadow: "inset -3px 0 10px rgba(0,0,0,0.2)",
                 }}
               >
-                {/* The turning page shows a subtle ruled texture */}
                 <div
                   style={{
                     position: "absolute",
@@ -963,7 +1122,6 @@ export default function AlbumScene() {
                     borderRadius: "4px 12px 12px 4px",
                   }}
                 />
-                {/* Shadow on the fold */}
                 <div
                   style={{
                     position: "absolute",
@@ -1028,13 +1186,14 @@ export default function AlbumScene() {
               }}
             >
               {Array.from({ length: PAGES.length + 2 }).map((_, i) => {
-                const idx = i - 1; // -1=cover, 0..N-1=pages, N=last
-                const active = idx === page;
+                const idx = i - 1;
+                const isActive = idx === page;
                 return (
                   <button
                     key={i}
                     onClick={() => {
                       if (turning || idx === page) return;
+                      if (audioRef.current) audioRef.current.volume = 0.35;
                       setTurnDir(idx > page ? "fwd" : "bwd");
                       setTurning(true);
                       setTimeout(() => {
@@ -1044,10 +1203,10 @@ export default function AlbumScene() {
                     }}
                     style={{
                       flexShrink: 0,
-                      width: active ? "16px" : "5px",
+                      width: isActive ? "16px" : "5px",
                       height: "5px",
                       borderRadius: "3px",
-                      background: active
+                      background: isActive
                         ? "linear-gradient(to right, #c8960a, #e8b830)"
                         : "rgba(180,140,60,0.18)",
                       border: "none",
@@ -1103,10 +1262,14 @@ export default function AlbumScene() {
           </p>
         </div>
 
-        {/* Fullscreen */}
-        {fullscreen && pageData && !pageData.isVideo && (
+        {/* ── FULLSCREEN ── */}
+        {fullscreen && pageData && (
           <div
-            onClick={() => setFullscreen(false)}
+            onClick={() => {
+              if (!pageData.isVideo) {
+                setFullscreen(false);
+              }
+            }}
             style={{
               position: "fixed",
               inset: 0,
@@ -1117,22 +1280,48 @@ export default function AlbumScene() {
               alignItems: "center",
               justifyContent: "center",
               padding: "1rem",
-              cursor: "zoom-out",
+              cursor: pageData.isVideo ? "default" : "zoom-out",
             }}
           >
-            <img
-              src={pageData.image}
-              alt="foto completa"
-              style={{
-                maxWidth: "100%",
-                maxHeight: "100%",
-                objectFit: "contain",
-                borderRadius: "4px",
-                boxShadow: "0 0 60px rgba(0,0,0,0.9)",
-              }}
-            />
+            {pageData.isVideo ? (
+              <video
+                src={pageData.image}
+                controls
+                playsInline
+                autoPlay
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "90vh",
+                  width: "auto",
+                  height: "auto",
+                  objectFit: "contain",
+                  borderRadius: "4px",
+                  boxShadow: "0 0 60px rgba(0,0,0,0.9)",
+                }}
+                onPlay={audioDown}
+                onPause={audioUp}
+                onEnded={audioUp}
+              />
+            ) : (
+              <img
+                src={pageData.image}
+                alt="foto completa"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "90vh",
+                  width: "auto",
+                  height: "auto",
+                  objectFit: "contain",
+                  borderRadius: "4px",
+                  boxShadow: "0 0 60px rgba(0,0,0,0.9)",
+                }}
+              />
+            )}
             <button
-              onClick={() => setFullscreen(false)}
+              onClick={() => {
+                setFullscreen(false);
+                audioUp();
+              }}
               style={{
                 position: "fixed",
                 top: "1.2rem",
@@ -1148,6 +1337,7 @@ export default function AlbumScene() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                zIndex: 201,
               }}
             >
               ✕
