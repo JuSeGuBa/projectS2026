@@ -946,6 +946,8 @@ export default function AlbumScene() {
                         src={pageData.image}
                         controls
                         playsInline
+                        controlsList="nodownload nofullscreen noremoteplayback"
+                        disablePictureInPicture
                         style={{
                           width: "100%",
                           height: "100%",
@@ -1289,6 +1291,8 @@ export default function AlbumScene() {
                 controls
                 playsInline
                 autoPlay
+                controlsList="nodownload nofullscreen noremoteplayback"
+                disablePictureInPicture
                 style={{
                   maxWidth: "100%",
                   maxHeight: "90vh",
