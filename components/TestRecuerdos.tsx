@@ -8,56 +8,34 @@ interface Question {
   q: string;
   answer: string;
   acceptedAnswers: string[];
+  hint?: string; // pista opcional visible si falla
 }
 
+// ✏️ AGREGA O EDITA PREGUNTAS AQUÍ
+// Cada pregunta tiene:
+//   q             → la pregunta que se muestra
+//   answer        → la respuesta correcta que se muestra si falla
+//   acceptedAnswers → palabras/frases que se aceptan como correctas (en minúsculas sin tildes)
+//   hint          → pista opcional (aparece debajo de la pregunta)
 const QUESTIONS: Question[] = [
+  // ── BLOQUE 1: LOS INICIOS ──
   {
-    q: "¿A que edad fue nuestro primer beso?",
-    answer: "6 años",
+    q: "¿A qué edad fue nuestro primer beso?",
+    answer: "6 años (él) y 7 (ella)",
     acceptedAnswers: [
-      "6 años",
-      "7 años",
       "6",
       "7",
-      "El 7 yo 6",
-      "seis y siete",
       "seis",
       "siete",
-    ],
-  },
-  {
-    q: "¿Dónde fue nuestro primer encuentro cuando estábamos a distancia?",
-    answer: "En mi casa",
-    acceptedAnswers: [
-      "mi casa",
-      "casa de bosa",
-      "bosa",
-      "casa de Sofi",
-      "en frente de mi casa",
-      "sofi",
-      "casa",
-    ],
-  },
-  {
-    q: "¿Quién escribió el primer mensaje?",
-    answer: "Él — Sebas",
-    acceptedAnswers: ["sebas", "el", "él", "sebastian", "mi amor"],
-  },
-  {
-    q: "¿En donde fue nuestra primera foto juntos, en la distancia?",
-    answer: "En la fiesta de grado",
-    acceptedAnswers: [
-      "grado",
-      "fiesta grado",
-      "fiesta de grado",
-      "graduacion",
-      "mi fiesta",
-      "mi casa",
+      "6 años",
+      "7 años",
+      "el 7 yo 6",
+      "seis y siete",
     ],
   },
   {
     q: "¿Desde qué edad nos conocemos?",
-    answer: "6 años",
+    answer: "Desde los 6 años",
     acceptedAnswers: [
       "6",
       "seis",
@@ -65,12 +43,40 @@ const QUESTIONS: Question[] = [
       "siete",
       "6 años",
       "7 años",
-      "El 6 y yo 7",
+      "el 6 y yo 7",
     ],
   },
   {
-    q: "¿Cuál fue el primer regalo que yo te di a ti?",
-    answer: "Un anillo",
+    q: "¿Dónde fue nuestro primer beso?",
+    answer: "En el cuarto de Sebas",
+    acceptedAnswers: [
+      "cuarto",
+      "habitacion",
+      "cuarto de sebas",
+      "mi cuarto",
+      "el cuarto de el",
+    ],
+  },
+  {
+    q: "¿Quién escribió el primer mensaje cuando retomamos el contacto?",
+    answer: "Él — Sebas",
+    acceptedAnswers: ["sebas", "el", "él", "sebastian", "mi amor"],
+  },
+  {
+    q: "¿Cuándo nos hicimos novios?",
+    answer: "Finales de octubre de 2024",
+    acceptedAnswers: [
+      "octubre",
+      "2024",
+      "octubre 2024",
+      "finales de octubre",
+      "noviembre",
+      "11 de noviembre",
+    ],
+  },
+  {
+    q: "¿Cuál fue el primer regalo que él te dio?",
+    answer: "Un anillo y gomitas",
     acceptedAnswers: [
       "anillo",
       "el anillo",
@@ -80,22 +86,35 @@ const QUESTIONS: Question[] = [
     ],
   },
   {
-    q: "¿Dónde fue nuestro primer beso?",
-    answer: "En el cuarto de Sebas",
+    q: "¿Dónde fue nuestro primer encuentro en persona después de la distancia?",
+    answer: "En la casa de ella (Bosa)",
     acceptedAnswers: [
-      "mi cuarto",
-      "el cuarto de el",
-      "el cuarto de Sebas",
-      "a los 6 años en el cuarto de el",
-      "a en el cuarto de el a los 6 años",
-      "cuarto",
-      "habitacion",
+      "mi casa",
+      "casa de bosa",
+      "bosa",
+      "casa de sofi",
+      "sofi",
+      "casa",
+      "en frente de mi casa",
     ],
   },
   {
-    q: "¿Qué canción nos recuerda a nosotros?",
+    q: "¿Dónde fue nuestra primera foto juntos (en la distancia)?",
+    answer: "En la fiesta de grado",
+    acceptedAnswers: [
+      "grado",
+      "fiesta grado",
+      "fiesta de grado",
+      "graduacion",
+      "mi fiesta",
+    ],
+  },
+
+  // ── BLOQUE 2: CANCIONES Y DETALLES ──
+  {
+    q: "¿Qué canciones nos recuerdan a nosotros? (nombra al menos una)",
     answer:
-      "US de James Bay / Cosas que no te dije de Saiko / Querer querernos de Canserbero",
+      "Us – James Bay / Cosas que no te dije – Saiko / Querer querernos – Canserbero",
     acceptedAnswers: [
       "us",
       "james bay",
@@ -104,6 +123,126 @@ const QUESTIONS: Question[] = [
       "canserbero",
       "querer querernos",
     ],
+  },
+  {
+    q: "¿Cual fue nuestra primera cancion?",
+    answer: "Cosas que no te dije — Saiko",
+    acceptedAnswers: [
+      "saiko",
+      "cosas que no te dije",
+      "cosas",
+      "saiko cosasquenotedije",
+    ],
+  },
+  {
+    q: "¿Cómo se llama la canción del álbum de fotos?",
+    answer: "Us — James Bay",
+    acceptedAnswers: ["us", "james bay", "us james bay"],
+  },
+  {
+    q: "¿Cómo se llaman nuestros hijos soñados?",
+    answer: "Iker Noah, Reichel Antonella",
+    acceptedAnswers: [
+      "iker",
+      "iker noah",
+      "antonella",
+      "anto",
+      "reichel",
+      "iker antonella reichel",
+    ],
+  },
+  {
+    q: "¿Cómo se llama la niña que mencionamos en el universo de estrellas?",
+    answer: "Reichel Antonella",
+    acceptedAnswers: ["Anto", "Reichel", "Reichel Antonella"],
+  },
+
+  // ── BLOQUE 3: NUESTRA HISTORIA ──
+  {
+    q: "¿En que lugar queremos vivir cuando nos casemos?",
+    answer: "Pereira",
+    acceptedAnswers: ["pereira", "risaralda"],
+  },
+  {
+    q: "¿En qué mes y año tomamos la decisión de pausar la relación?",
+    answer: "Mayo de 2026",
+    acceptedAnswers: ["mayo", "2026", "mayo 2026", "Mayo de 2026"],
+  },
+  {
+    q: "¿Cuánto tiempo estuvimos a distancia antes de estar juntos en persona?",
+    answer: "Más de un año",
+    acceptedAnswers: [
+      "un año",
+      "mas de un año",
+      "1 año",
+      "un ano",
+      "más de un año",
+      "año y pico",
+    ],
+  },
+  {
+    q: "¿Qué pasó el 11 de noviembre de 2024?",
+    answer: "LNos hicimos novios",
+    acceptedAnswers: [
+      "novios",
+      "nos hicimos novios",
+      "empezamos la relacion",
+      "empezamos",
+    ],
+  },
+  {
+    q: "¿En qué mes se bautizo tu hombre jaja",
+    answer: "Junio",
+    acceptedAnswers: ["Junio"],
+  },
+
+  // ── BLOQUE 4: PREGUNTAS DIFÍCILES ──
+  {
+    q: "¿Cuántas estrellas tiene aproximadamente el universo que yo te hice?",
+    answer: "100 estrellas",
+    acceptedAnswers: ["100", "cien", "mas de 100", "100 estrellas"],
+  },
+  {
+    q: "¿Cuántas páginas tiene el álbum de fotos que él armó?",
+    answer: "38 páginas",
+    acceptedAnswers: ["38", "treinta y ocho", "38 paginas"],
+  },
+  {
+    q: "¿Qué usamos para imaginar cómo serían sus fotos juntos cuando estaban a distancia?",
+    answer: "Inteligencia artificial (IA)",
+    acceptedAnswers: ["ia", "inteligencia artificial", "ai", "una ia", "la ia"],
+  },
+  {
+    q: "¿Cómo se llama el apodo de él en el juego de frases?",
+    answer: "TriplePapichulo",
+    acceptedAnswers: [
+      "triplepapichulo",
+      "triple papichulo",
+      "papichulo",
+      "triple",
+    ],
+  },
+  {
+    q: "¿Qué tipo de casa/lugar sueñan tener juntos?",
+    answer: "Una hacienda con espacio para vivir y crecer",
+    acceptedAnswers: ["hacienda", "finca", "casa grande", "espacio", "campo"],
+  },
+  {
+    q: "¿Quien hablo primero con sus padres sobre de nosotros",
+    answer: "Sebas",
+    acceptedAnswers: ["El", "Sebas", "Mi novio", "Mi hombre", "el"],
+    hint: "Está en una de las estrellas del universo ✦",
+  },
+  {
+    q: "¿Qué edad tenías tu con la chaqueta rosada que él menciona en una estrella?",
+    answer: "6 años",
+    acceptedAnswers: ["6", "seis", "6 años"],
+    hint: "Tu siempre andabas con esa chaqueta jaja hasta cuando nos dimos nuestro primer beso la tenias jaja",
+  },
+  {
+    q: "Cual era la app que teniamos en la distancia",
+    answer: "Life360",
+    acceptedAnswers: ["Life360", "Life share", "LifeShare", "Life"],
   },
 ];
 
@@ -120,26 +259,31 @@ function checkAnswer(input: string, accepted: string[]) {
   return accepted.some((a) => n.includes(normalize(a)));
 }
 
+// Barajar para que no siempre salgan en el mismo orden
+function shuffle<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
 export default function TestRecuerdos() {
+  const router = useRouter();
+
   useEffect(() => {
     const audio = new Audio("/music/ElectricLove.mp3");
     audio.loop = true;
     audio.volume = 0.35;
-
     const playAudio = () => {
       audio.play().catch(() => {});
       window.removeEventListener("click", playAudio);
     };
-
     window.addEventListener("click", playAudio);
-
     return () => {
       audio.pause();
       audio.src = "";
       window.removeEventListener("click", playAudio);
     };
   }, []);
-  const router = useRouter();
+
+  const [questions] = useState<Question[]>(() => shuffle(QUESTIONS));
   const [current, setCurrent] = useState(0);
   const [input, setInput] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -149,7 +293,7 @@ export default function TestRecuerdos() {
   const [showSecret, setShowSecret] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
-  const q = QUESTIONS[current];
+  const q = questions[current];
 
   const submit = () => {
     if (!input.trim() || submitted) return;
@@ -163,18 +307,12 @@ export default function TestRecuerdos() {
     setInput("");
     setSubmitted(false);
     setIsCorrect(false);
-    if (current + 1 >= QUESTIONS.length) setShowResult(true);
+    if (current + 1 >= questions.length) setShowResult(true);
     else setCurrent((c) => c + 1);
   };
 
   const restart = () => {
-    setCurrent(0);
-    setInput("");
-    setSubmitted(false);
-    setIsCorrect(false);
-    setScore(0);
-    setShowResult(false);
-    setShowSecret(false);
+    window.location.reload();
   };
 
   const goBack = () => {
@@ -188,15 +326,14 @@ export default function TestRecuerdos() {
         onClose={restart}
         onGoBack={goBack}
         lines={[
-          // ✏️ PÁRRAFO 1 — edita aquí el mensaje del juego de recuerdos
           "Qué bueno que recordaste cada uno. Yo los guardo en mi corazón y jamás los olvidaré. Cada fecha, cada lugar, cada detalle que guardamos es un pedazo de la vida que formaremos o estamos formando, jeje.",
-          // ✏️ PÁRRAFO 2 — edita aquí
           "Nuestra historia no cabe en ningún test o juego. Creo que en ningún lugar cabe, sino en nuestros corazones y memorias, donde permanecerá para siempre, mi amor.",
-          // ✏️ LÍNEA FINAL ROSA — edita aquí
           "Gracias por esta historia tan hermosa. Tengo fe en que seguiremos creando más, y estoy emocionado por todo lo que viene. Te amo 3 millones ❤️‍🩹",
         ]}
       />
     );
+
+  const pct = score / questions.length;
 
   return (
     <div
@@ -234,7 +371,7 @@ export default function TestRecuerdos() {
         ← volver
       </button>
 
-      {/* Result */}
+      {/* ── RESULTADO ── */}
       {showResult && !showSecret && (
         <div
           style={{
@@ -253,7 +390,7 @@ export default function TestRecuerdos() {
           }}
         >
           <div style={{ fontSize: "3rem", marginBottom: "1.5rem" }}>
-            {score >= 7 ? "🌟" : score >= 4 ? "❤️‍🩹" : "💜"}
+            {pct >= 0.9 ? "🌟" : pct >= 0.6 ? "❤️‍🩹" : "💜"}
           </div>
           <p
             style={{
@@ -264,11 +401,11 @@ export default function TestRecuerdos() {
               marginBottom: "0.6rem",
             }}
           >
-            {score >= 7
-              ? "¡Esoooo yupiiiiiiiii jajajajajja te amooooo!"
-              : score >= 4
-                ? "¡Recuerdas bastante!"
-                : "Jaja, ¡hay que recordar más!"}
+            {pct >= 0.9
+              ? "¡Esoooo yupiiiiiii jajajajajja te amooooo! 🌟"
+              : pct >= 0.6
+                ? "¡Recuerdas bastante, casi perfecta!"
+                : "Jaja, ¡hay que recordar más! Pero te amo igual 💜"}
           </p>
           <p
             style={{
@@ -279,7 +416,7 @@ export default function TestRecuerdos() {
               marginBottom: "2rem",
             }}
           >
-            {score} de {QUESTIONS.length} respuestas correctas
+            {score} de {questions.length} respuestas correctas
           </p>
           <div
             style={{
@@ -325,7 +462,7 @@ export default function TestRecuerdos() {
         </div>
       )}
 
-      {/* Game */}
+      {/* ── JUEGO ── */}
       {!showResult && (
         <div
           style={{ width: "100%", maxWidth: "480px", padding: "5rem 0 2rem" }}
@@ -346,7 +483,7 @@ export default function TestRecuerdos() {
                   color: "rgba(200,180,255,0.4)",
                 }}
               >
-                {current + 1} de {QUESTIONS.length}
+                {current + 1} de {questions.length}
               </span>
               <span
                 style={{
@@ -369,7 +506,7 @@ export default function TestRecuerdos() {
               <div
                 style={{
                   height: "100%",
-                  width: `${(current / QUESTIONS.length) * 100}%`,
+                  width: `${(current / questions.length) * 100}%`,
                   background: "linear-gradient(to right, #ffb43c, #ff6b9d)",
                   transition: "width 0.4s ease",
                 }}
@@ -407,20 +544,24 @@ export default function TestRecuerdos() {
                 fontSize: "clamp(1rem, 3vw, 1.15rem)",
                 color: "#f0e8ff",
                 lineHeight: 1.6,
-                margin: "0 0 0.8rem",
+                margin: 0,
               }}
             >
               {q.q}
             </p>
-            <p
-              style={{
-                fontFamily: "Georgia, serif",
-                fontSize: "0.78rem",
-                color: "rgba(200,180,255,0.35)",
-                fontStyle: "italic",
-                margin: 0,
-              }}
-            ></p>
+            {q.hint && (
+              <p
+                style={{
+                  fontFamily: "Georgia, serif",
+                  fontSize: "0.75rem",
+                  color: "rgba(255,180,60,0.35)",
+                  fontStyle: "italic",
+                  margin: "0.8rem 0 0",
+                }}
+              >
+                💡 {q.hint}
+              </p>
+            )}
           </div>
 
           {/* Input */}
@@ -476,7 +617,6 @@ export default function TestRecuerdos() {
                   fontSize: "0.88rem",
                   color: isCorrect ? "#a0ffc0" : "rgba(255,160,160,0.8)",
                   margin: "0 0 0.4rem",
-                  fontWeight: 400,
                 }}
               >
                 {isCorrect ? "✓ ¡Correcto!" : "✗ No exactamente..."}
@@ -537,7 +677,7 @@ export default function TestRecuerdos() {
                 cursor: "pointer",
               }}
             >
-              {current + 1 >= QUESTIONS.length
+              {current + 1 >= questions.length
                 ? "ver resultado ✦"
                 : "siguiente →"}
             </button>

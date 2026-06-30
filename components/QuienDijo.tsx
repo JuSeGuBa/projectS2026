@@ -9,6 +9,7 @@ interface Frase {
   quien: "Reina" | "TriplePapichulo";
 }
 
+// ✏️ AGREGA O EDITA FRASES AQUÍ — cambia "quien" por "Reina" o "TriplePapichulo"
 const FRASES: Frase[] = [
   { texto: "Te Amo.", quien: "Reina" },
   { texto: "Me gustas.", quien: "Reina" },
@@ -21,6 +22,25 @@ const FRASES: Frase[] = [
   { texto: "¿Y si nos casamos en secreto?", quien: "TriplePapichulo" },
   { texto: "Quiero que planeemos nuestra boda.", quien: "Reina" },
   { texto: "Mucho cuidado.", quien: "TriplePapichulo" },
+  { texto: "¿Ya comiste?", quien: "TriplePapichulo" },
+  { texto: "No me imagino mi vida sin ti.", quien: "TriplePapichulo" },
+  { texto: "Eres lo mejor que me ha pasado.", quien: "Reina" },
+  { texto: "¿Cuándo nos vemos?", quien: "Reina" },
+  { texto: "Es la primera vez que me salen lagrimas de amor", quien: "Reina" },
+  { texto: "Quiero envejecer contigo.", quien: "TriplePapichulo" },
+  { texto: "¿Estás bien? Te noto diferente.", quien: "Reina" },
+  { texto: "Yo también te extraño, pero más yo.", quien: "TriplePapichulo" },
+  { texto: "Cuando nos vamos a casar?.", quien: "Reina" },
+  { texto: "Me gusta cómo me miras.", quien: "Reina" },
+  { texto: "¿Me puedes llamar?", quien: "TriplePapichulo" },
+  { texto: "Eres el amor de mi vida.", quien: "TriplePapichulo" },
+  { texto: "Sueño con que vivamos juntos.", quien: "Reina" },
+  { texto: "Cuídate mucho, ¿sí?", quien: "Reina" },
+  { texto: "Quiero 2 hijos", quien: "TriplePapichulo" },
+  { texto: "Me entrego a ti.", quien: "TriplePapichulo" },
+  { texto: "¿Con quien hablas?", quien: "Reina" },
+  { texto: "Eres mi pedazo de mi vida.", quien: "Reina" },
+  { texto: "Ojala estuvieras aqui.", quien: "Reina" },
 ];
 
 const LABELS: Record<string, string> = {
@@ -28,29 +48,33 @@ const LABELS: Record<string, string> = {
   TriplePapichulo: "TriplePapichulo jiji",
 };
 
+// Barajar aleatoriamente las frases para que no siempre salgan en el mismo orden
+function shuffle<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
 export default function QuienDijo() {
   const router = useRouter();
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const audio = new Audio("/music/21Questions.mp3");
     audio.loop = true;
     audio.volume = 0.35;
-
+    audioRef.current = audio;
     const start = () => {
       audio.play().catch(() => {});
       document.removeEventListener("pointerdown", start);
     };
-
     document.addEventListener("pointerdown", start);
-
     return () => {
       document.removeEventListener("pointerdown", start);
       audio.pause();
     };
   }, []);
 
+  // Tomamos 15 frases aleatorias de la lista total cada vez que se juega
+  const [frases] = useState<Frase[]>(() => shuffle(FRASES).slice(0, 15));
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
@@ -58,14 +82,14 @@ export default function QuienDijo() {
   const [showSecret, setShowSecret] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
-  const f = FRASES[current];
+  const f = frases[current];
 
   const pick = (quien: string) => {
     if (selected) return;
     setSelected(quien);
     if (quien === f.quien) setScore((s) => s + 1);
     setTimeout(() => {
-      if (current + 1 >= FRASES.length) setShowResult(true);
+      if (current + 1 >= frases.length) setShowResult(true);
       else {
         setCurrent((c) => c + 1);
         setSelected(null);
@@ -74,11 +98,8 @@ export default function QuienDijo() {
   };
 
   const restart = () => {
-    setCurrent(0);
-    setSelected(null);
-    setScore(0);
-    setShowResult(false);
-    setShowSecret(false);
+    // Al reiniciar se barajan de nuevo — siempre frases distintas
+    window.location.reload();
   };
 
   const goBack = () => {
@@ -92,11 +113,8 @@ export default function QuienDijo() {
         onClose={restart}
         onGoBack={goBack}
         lines={[
-          // ✏️ PÁRRAFO 1 — edita aquí el mensaje del juego de frases
           "Cada una de esas frases las dijimos de verdad, con el corazón. No solo en el momento, sino que marcaron. Y lo más bonito no es quién las dijo primero, sino que tú y yo formamos cada momento.",
-          // ✏️ PÁRRAFO 2 — edita aquí
           "Me pone feliz que te acuerdes de esas palabras; algunas fueron difíciles, jejej. Así como no las olvidaste, yo jamás olvidaré cada recuerdo que formamos juntos.",
-          // ✏️ LÍNEA FINAL ROSA — edita aquí
           "Lo más especial de nosotros es que, aunque son frases o palabras importantes, no solo se quedan ahí, sino que lo demostramos con acciones, y siempre nos esforzamos y lo damos todo. Gracias por todo. Te amo, reina hermosa 👑.",
         ]}
       />
@@ -166,11 +184,13 @@ export default function QuienDijo() {
               marginBottom: "0.6rem",
             }}
           >
-            {score >= 9
-              ? "¡Nos conocemos muy bien!"
-              : score >= 6
-                ? "¡Bastante bien!"
-                : "Jajaja… ¡hay que hablar más!"}
+            {score >= 13
+              ? "¡Eres genial te amo tanto reina mia pero tanto! 👑"
+              : score >= 9
+                ? "¡Nos conocemos muy bien!"
+                : score >= 6
+                  ? "¡Bastante bien!"
+                  : "Jajaja… ¡hay que hablar más!"}
           </p>
           <p
             style={{
@@ -181,7 +201,7 @@ export default function QuienDijo() {
               marginBottom: "2rem",
             }}
           >
-            {score} de {FRASES.length} frases correctas
+            {score} de {frases.length} frases correctas
           </p>
           <div
             style={{
@@ -221,7 +241,7 @@ export default function QuienDijo() {
                 cursor: "pointer",
               }}
             >
-              intentar de nuevo, tu puedes amor
+              intentar de nuevo, tú puedes amor
             </button>
           </div>
         </div>
@@ -248,7 +268,7 @@ export default function QuienDijo() {
                   color: "rgba(200,180,255,0.4)",
                 }}
               >
-                frase {current + 1} de {FRASES.length}
+                frase {current + 1} de {frases.length}
               </span>
               <span
                 style={{
@@ -271,7 +291,7 @@ export default function QuienDijo() {
               <div
                 style={{
                   height: "100%",
-                  width: `${(current / FRASES.length) * 100}%`,
+                  width: `${(current / frases.length) * 100}%`,
                   background: "linear-gradient(to right, #c084fc, #ff6b9d)",
                   transition: "width 0.4s ease",
                 }}

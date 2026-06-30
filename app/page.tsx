@@ -9,6 +9,24 @@ const StarCanvas = dynamic(() => import("@/components/StarCanvas"), {
 });
 
 export default function Home() {
+  useEffect(() => {
+    const audio = new Audio("/music/ParaTenerteSiempre.mp3");
+    audio.loop = true;
+    audio.volume = 0.35;
+
+    const playAudio = () => {
+      audio.play().catch(() => {});
+      window.removeEventListener("click", playAudio);
+    };
+
+    window.addEventListener("click", playAudio);
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+      window.removeEventListener("click", playAudio);
+    };
+  }, []);
   const router = useRouter();
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
